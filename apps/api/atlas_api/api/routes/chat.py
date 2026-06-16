@@ -2,7 +2,9 @@ import time
 
 from fastapi import APIRouter
 
+from atlas_api.core.config import get_settings
 from atlas_api.schemas import ChatRequest, ChatResponse, TraceStep
+from atlas_api.services.llm import get_llm_provider, grounded_chat_template
 from atlas_api.services.store import store
 
 router = APIRouter()
@@ -15,7 +17,34 @@ def chat(payload: ChatRequest) -> ChatResponse:
     hits = store.search_memories(payload.message, top_k=payload.top_k)
     citations = [citation for hit in hits for citation in hit.citations]
 
-    answer = _build_grounded_answer(payload.message, payload.context or "", profile, hits)
+    fallback = {
+        "answer": _build_grounded_answer(payload.message, payload.context or "", profile, hits),
+        "confidence": 0.82 if hits else 0.45,
+        "assumptions": [
+            "Local deterministic response used when a provider is not configured or fails.",
+            "Retrieved memories are treated as the source of truth for this answer.",
+        ],
+        "verification_needed": (
+            [] if hits else ["Add more personal memory before trusting this answer."]
+        ),
+    }
+    provider = get_llm_provider(get_settings())
+    llm_result = provider.generate_json(
+        template=grounded_chat_template(),
+        variables={
+            "message": payload.message,
+            "context": payload.context or "",
+            "profile": profile.model_dump(mode="json"),
+            "evidence": [hit.model_dump(mode="json") for hit in hits],
+        },
+        fallback=fallback,
+    )
+    answer = str(llm_result.content.get("answer") or fallback["answer"])
+    confidence = float(llm_result.content.get("confidence") or fallback["confidence"])
+    assumptions = list(llm_result.content.get("assumptions") or fallback["assumptions"])
+    if llm_result.fallback_used:
+        assumptions.append("Provider fallback was used for this run.")
+    assumptions.extend(llm_result.errors)
     latency_ms = int((time.perf_counter() - started) * 1000)
     steps = [
         TraceStep(
@@ -35,7 +64,13 @@ def chat(payload: ChatRequest) -> ChatResponse:
         TraceStep(
             name="generate_answer",
             status="completed",
-            output={"answer_chars": len(answer), "citations": len(citations)},
+            output={
+                "answer_chars": len(answer),
+                "citations": len(citations),
+                "provider": llm_result.provider,
+                "model": llm_result.model,
+                "fallback_used": llm_result.fallback_used,
+            },
             latency_ms=2,
         ),
     ]
@@ -43,16 +78,17 @@ def chat(payload: ChatRequest) -> ChatResponse:
         interaction_type="chat",
         user_input=payload.message,
         retrieved_memories=hits,
-        prompt_version="chat-grounded-v1",
-        model_used="atlas-deterministic-chat-v1",
+        prompt_version=llm_result.prompt_version,
+        model_used=f"{llm_result.provider}:{llm_result.model}",
         tool_calls=[{"tool": "memory.search", "top_k": payload.top_k}],
-        generated_output={"answer": answer, "citation_count": len(citations)},
+        generated_output={
+            "answer": answer,
+            "citation_count": len(citations),
+            "verification_needed": llm_result.content.get("verification_needed", []),
+        },
         latency_ms=latency_ms,
-        confidence=0.82 if hits else 0.45,
-        assumptions=[
-            "Local deterministic response used until an LLM provider is configured.",
-            "Retrieved memories are treated as the source of truth for this answer.",
-        ],
+        confidence=confidence,
+        assumptions=[str(item) for item in assumptions],
         steps=steps,
     )
     return ChatResponse(

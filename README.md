@@ -1,9 +1,12 @@
 # Atlas
 
 Atlas is a private, traceable personal AI operating system for engineering work, learning, career
-planning, and daily productivity. It is built as a serious early-stage AI product: memory has source
-evidence, workflows are named and observable, repository code intelligence is inspectable, and write
-actions require approval.
+planning, and daily productivity.
+
+Current checkpoint: Atlas runs as a **local deterministic prototype with LLM-ready architecture**.
+The product ambition is a personal AI OS, but the default runtime intentionally avoids cloud calls:
+generation uses deterministic fallbacks, embeddings use a deterministic local provider, and real
+OpenAI/Ollama/vLLM-style providers can be enabled through environment configuration.
 
 ## Problem
 
@@ -26,7 +29,8 @@ Atlas centralizes personal context and turns it into grounded workflows:
 
 - Personal profile system for goals, roles, skills, weak areas, stack, and learning priorities.
 - Resume PDF upload with raw text storage and structured section extraction.
-- Source-backed memory CRUD with metadata, importance, tags, citations, and deterministic embeddings.
+- Source-backed memory CRUD with metadata, importance, tags, citations, embedding provenance, and
+  reindexing support.
 - Retrieval and context-aware chat with cited sources and trace IDs.
 - Workflow engine for daily planning, weekly planning, journals, resume bullets, interview answers,
   learning plans, career analysis, and codebase workflows.
@@ -51,7 +55,8 @@ Atlas centralizes personal context and turns it into grounded workflows:
 - Simulator mode for system design, debugging incidents, production outages, and behavioral interview
   drills with rubric-based evaluation.
 - Plugin registry for GitHub, calendar, file, resume, repo analyzer, and interview coach capabilities.
-- Hybrid model provider surface for cloud LLMs plus local Ollama/vLLM-style endpoints.
+- Provider layer for deterministic fallback, OpenAI-compatible chat/embeddings, Ollama, and vLLM-style
+  endpoints.
 - Personal command center with priorities, projects, pending approvals, recent memory, recent traces,
   weak areas, and next recommended action.
 - Optional browser voice command mode with speech-to-text input and text-to-speech response.
@@ -75,15 +80,16 @@ Core layers:
 - Backend: Python, FastAPI, Pydantic settings/schemas, modular API routers.
 - Database path: local SQLite implementation for fast checkpoints plus PostgreSQL/pgvector-ready
   models and Docker infrastructure.
-- Retrieval: deterministic local embeddings and hybrid keyword/vector scoring.
-- Workflow engine: named deterministic workflows with trace linkage, designed to later swap in
-  LangGraph or OpenAI Agents SDK.
+- Retrieval: provider-backed embeddings with deterministic fallback plus hybrid keyword/vector scoring.
+- Workflow engine: named workflows with trace linkage, provider-backed structured JSON output, and a
+  deterministic fallback path designed to later swap in LangGraph or OpenAI Agents SDK.
 - Code intelligence: AST/heuristic parser, graph builder, deterministic risk analyzer.
 - Privacy and trust: local permission scopes, redaction, export, forget controls, and local-only mode.
 - Knowledge graph: deterministic graph builder over profile, memory, journals, repos, code, and
   decisions.
 - Simulation and evaluation: rubric-based drills and per-output self-evaluation.
-- Plugins/models: capability registry plus cloud/local model provider options.
+- Plugins/models: capability registry plus cloud/local model provider options for generation and
+  embeddings.
 - Observability: internal trace records for inputs, retrieved memories, tools, outputs, latency,
   assumptions, errors, and steps.
 - Approvals: preview, approve/reject, action audit, artifact records, and trace logs.
@@ -96,8 +102,8 @@ See `docs/architecture.md` for diagrams and entity details.
 - Backend: FastAPI, Pydantic, Python.
 - Database: PostgreSQL + pgvector in Docker Compose; local SQLite-backed store for this checkpoint.
 - Background-ready infrastructure: Redis in Docker Compose.
-- AI provider: pluggable provider settings, deterministic local engine currently used for offline
-  verification.
+- AI provider: deterministic fallback by default; OpenAI-compatible, Ollama, and vLLM-style providers
+  are available through configuration.
 - Code intelligence: Python AST, TypeScript/JavaScript heuristics, optional tree-sitter/networkx
   detection for future expansion.
 
@@ -164,21 +170,17 @@ npm run build:web
 
 ## Demo Flow
 
-1. Open Command Center and show priorities, projects, approvals, traces, and weak areas.
-2. Open Profile and save goals, target roles, skills, weak areas, stack, and learning priorities.
-3. Upload a resume PDF and inspect structured education, experience, projects, skills, certifications,
+1. Open Demo and use the golden-flow progress state as the story spine.
+2. Upload a resume PDF and inspect structured education, experience, projects, skills, certifications,
    and achievements.
+3. Open Profile and save goals, target roles, skills, weak areas, stack, and learning priorities.
 4. Create or search memory, then ask a grounded question such as "What should I learn next?"
-5. Run `generate_resume_bullets` or `prepare_interview_answer` from Workflows.
-6. Save a journal entry and inspect weekly summary, resume bullets, interview stories, and insights.
-7. Upload a repository ZIP from Projects.
-8. Open Code Intel, run analysis, search symbols, inspect the graph, and review risk evidence.
-9. Open Privacy and show allowed folders, blocked folders, redaction preview, export, and forget.
-10. Open Graph and Growth to show the personal knowledge graph, timeline, and skill tree.
-11. Open Decisions and store a technical decision with alternatives and tradeoffs.
-12. Open Simulator and answer a system design or incident scenario.
-13. Open Actions, propose an auto-demo pack, approve it, and inspect the artifact/audit log.
-14. Open Traces, Evals, and Plugins to verify evidence, self-checks, model modes, and plugin scopes.
+5. Upload a repository ZIP from Projects.
+6. Open Code Intel, run analysis, search symbols, inspect the graph, and review risk evidence.
+7. Run `generate_resume_bullets` or `prepare_interview_answer` from Workflows.
+8. Open Actions, propose an auto-demo pack, approve it, and inspect the artifact/audit log.
+9. Open Traces and inspect the evidence, prompt version, provider, assumptions, latency, and steps.
+10. Open Privacy, Graph, Growth, Decisions, Simulator, Evals, and Plugins as supporting depth.
 
 ## What Makes Atlas Different
 
@@ -196,7 +198,7 @@ npm run build:web
 
 ## Future Roadmap
 
-- OpenAI embeddings and model calls behind provider policy.
+- Production model policies, budgets, retries, and per-workflow provider selection.
 - LangGraph or OpenAI Agents SDK for resumable multi-step agent workflows.
 - Full tree-sitter grammars for richer symbol extraction and call graphs.
 - Remote GitHub API integration after approval gates.
@@ -207,6 +209,6 @@ npm run build:web
 
 ## Resume Bullet
 
-Built Atlas, a personal AI operating system that unifies memory, code intelligence, workflow
-automation, approval-gated tool execution, and traceable agent reasoning to assist with engineering
-work, learning, career planning, and daily productivity.
+Built Atlas, a local deterministic prototype of a personal AI operating system with LLM-ready
+architecture, unifying memory, code intelligence, workflow automation, approval-gated tool execution,
+and traceable reasoning to assist with engineering work, learning, career planning, and productivity.

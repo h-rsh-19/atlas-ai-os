@@ -106,6 +106,30 @@ class RetrievalResponse(BaseModel):
     hits: list[RetrievalHit] = Field(default_factory=list)
 
 
+class EmbeddingReindexResponse(BaseModel):
+    reindexed_count: int
+    provider: str
+    model: str
+    dimensions: int
+
+
+class DemoFlowStep(BaseModel):
+    id: str
+    title: str
+    route: str
+    status: str
+    detail: str
+    evidence_count: int = 0
+
+
+class DemoFlowStatus(BaseModel):
+    title: str
+    current_mode: str
+    completion_percent: int
+    next_step: str
+    steps: list[DemoFlowStep] = Field(default_factory=list)
+
+
 class ResumeStructuredProfile(BaseModel):
     education: list[str] = Field(default_factory=list)
     experience: list[str] = Field(default_factory=list)

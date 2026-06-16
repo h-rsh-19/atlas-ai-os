@@ -108,7 +108,7 @@ def test_traces_capture_chat_evidence_and_steps() -> None:
     assert response.status_code == 200
     traces = response.json()
     assert traces
-    chat_trace = next(trace for trace in traces if trace["prompt_version"] == "chat-grounded-v1")
+    chat_trace = next(trace for trace in traces if trace["prompt_version"] == "grounded-chat:v2")
     assert chat_trace["retrieved_memories"]
     assert chat_trace["steps"]
 
@@ -127,6 +127,7 @@ def test_workflow_engine_runs_named_workflow_with_trace() -> None:
     assert body["status"] == "completed"
     assert body["trace_id"]
     assert "bullets" in body["outputs"]
+    assert body["outputs"]["_provider"]
     assert body["steps"][-1]["name"] == "record_trace"
 
 

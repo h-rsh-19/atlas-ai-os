@@ -1,6 +1,12 @@
 # Atlas Architecture
 
-Atlas uses a production-style split between a typed web client, an API service, durable memory, workflow orchestration, tool execution, approval gates, and internal observability.
+Atlas uses a production-style split between a typed web client, an API service, durable memory,
+workflow orchestration, provider-backed AI boundaries, tool execution, approval gates, and internal
+observability.
+
+Current runtime mode: local deterministic prototype with LLM-ready architecture. Provider interfaces
+exist for OpenAI-compatible cloud calls, Ollama, and vLLM-style endpoints, while deterministic
+fallbacks keep local tests and demos offline by default.
 
 ## System Diagram
 
@@ -20,9 +26,11 @@ flowchart LR
   API --> Traces["Trace Service"]
   API --> Evals["Evaluation Suite"]
   Workflow --> Retrieval["Retrieval Layer"]
+  API --> Providers["LLM And Embedding Providers"]
   Retrieval --> VectorDB["PostgreSQL + pgvector"]
   Memory --> VectorDB
-  Workflow --> LLM["Pluggable LLM Provider"]
+  Retrieval --> Providers
+  Workflow --> Providers
   Workflow --> Approvals["Approval Gate"]
   Approvals --> Tools
   Tools --> LocalFiles["Local Files"]
@@ -59,6 +67,8 @@ flowchart LR
 ### Backend
 
 - FastAPI with modular routers under `/api`.
+- `AtlasStore` is now a facade over focused service mixins: memory, workflow, trace, action, code,
+  privacy, and growth.
 - Pydantic settings and typed request/response schemas.
 - SQLAlchemy models for memory, workflow state, trace events, and approvals.
 - Health checks that separate process health from dependency health.
@@ -73,6 +83,8 @@ flowchart LR
 
 - Memory sources represent evidence: notes, files, resumes, code snippets, links, and user-authored facts.
 - Memory items are chunked, summarized, embedded, tagged, and linked to sources.
+- Embedding metadata records provider, model, and dimensions. A reindex endpoint supports intentional
+  migration from deterministic vectors to real provider vectors.
 - Durable memory must include provenance, confidence, and timestamps.
 
 ### Retrieval Layer
@@ -83,7 +95,8 @@ flowchart LR
 
 ### Workflow Engine
 
-- MVP starts with explicit workflow records and deterministic route handlers.
+- MVP starts with explicit workflow records, deterministic fallback drafts, and provider-backed
+  structured JSON output.
 - Later versions can use LangGraph or OpenAI Agents SDK for resumable multi-step agents.
 - Workflow runs contain inputs, outputs, status, model policy, and trace linkage.
 
@@ -140,6 +153,14 @@ flowchart LR
 
 - Plugin registry records capability, category, permission scopes, enabled state, status, and config.
 - Cloud/local model providers are exposed for OpenAI-compatible cloud, Ollama, and vLLM endpoints.
+- Provider status is visible in the UI; the default mode is deterministic unless configured otherwise.
+
+### Golden Demo Flow
+
+- `/api/demo/flow` computes live completion state for the recruiter demo:
+  resume upload -> profile/goals -> memory retrieval -> repo upload -> code analysis -> workflow ->
+  approval -> artifact -> trace.
+- The web `/demo` page renders that state as a single guided path through the product.
 
 ### Evaluation Suite
 

@@ -1,17 +1,18 @@
 # Atlas Demo Video Script
 
-## 0:00 - Open Command Center
+## 0:00 - Open Demo
 
-Show the dashboard: live metrics, today's priorities, current projects, pending approvals, recent
-memory, weak areas, traces, and the optional voice command panel.
+Show the golden-flow page: resume upload, profile/goals, memory retrieval, repo upload, code
+analysis, workflow, approval, artifact, and trace. Point out the current mode badge:
+local deterministic prototype with LLM-ready architecture.
 
-Narration: "Atlas is a private personal AI OS for engineering, learning, and career growth. It is not
-just chat: memory, workflows, code intelligence, approvals, and traces are separate product systems."
+Narration: "Atlas is an ambitious personal AI OS, and this checkpoint is honest about where it is:
+a local deterministic prototype with provider-ready architecture. The demo has one smooth story."
 
 ## 0:45 - Add Personal Context
 
-Open Profile and show goals, target roles, skills, weak areas, preferred stack, and learning
-priorities. Open Resume and show parsed structured sections.
+Open Resume and show parsed structured sections. Then open Profile and show goals, target roles,
+skills, weak areas, preferred stack, and learning priorities.
 
 Narration: "Atlas starts from the user's own context and stores memory with citations."
 

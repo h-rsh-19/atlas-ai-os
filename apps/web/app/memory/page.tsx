@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Database, FileCheck2, Plus, Search, Trash2 } from "lucide-react";
+import { Database, FileCheck2, Plus, RefreshCw, Search, Trash2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import {
   createMemory,
   deleteMemory,
   listMemories,
+  reindexEmbeddings,
   searchMemory,
   type MemoryItem,
   type RetrievalHit
@@ -87,6 +88,19 @@ export default function MemoryPage() {
     }
   }
 
+  async function reindex() {
+    try {
+      setStatus("Reindexing embeddings...");
+      const result = await reindexEmbeddings();
+      await refresh();
+      setStatus(
+        `Reindexed ${result.reindexed_count} memories with ${result.provider}:${result.model}`
+      );
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Reindex failed");
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
@@ -96,7 +110,13 @@ export default function MemoryPage() {
             Source-backed context
           </h1>
         </div>
-        <Badge tone="blue">{status}</Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge tone="blue">{status}</Badge>
+          <Button variant="secondary" size="sm" onClick={reindex}>
+            <RefreshCw className="h-4 w-4" />
+            Reindex
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[420px_1fr]">

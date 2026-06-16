@@ -21,8 +21,18 @@ class Settings(BaseSettings):
     storage_path: str = "atlas.local.sqlite3"
     artifact_dir: str = "artifacts"
     cors_origins: list[str] = ["http://localhost:3000"]
-    llm_provider: str = "openai"
+    llm_provider: str = "deterministic"
+    llm_model: str = "atlas-deterministic-v1"
+    llm_timeout_seconds: float = 20.0
     openai_api_key: str | None = None
+    openai_base_url: str = "https://api.openai.com/v1"
+    openai_chat_model: str = "gpt-4.1-mini"
+    ollama_base_url: str = "http://localhost:11434"
+    ollama_model: str = "llama3.1"
+    vllm_base_url: str = "http://localhost:8001/v1"
+    vllm_model: str = "local-model"
+    embedding_provider: str = "deterministic"
+    embedding_model: str = "atlas-deterministic-embedding-v1"
     log_level: str = "INFO"
     embedding_dimensions: int = 1536
 

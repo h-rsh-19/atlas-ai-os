@@ -48,6 +48,30 @@ export type RetrievalHit = {
   citations: Citation[];
 };
 
+export type EmbeddingReindexResponse = {
+  reindexed_count: number;
+  provider: string;
+  model: string;
+  dimensions: number;
+};
+
+export type DemoFlowStep = {
+  id: string;
+  title: string;
+  route: string;
+  status: "completed" | "ready" | "pending";
+  detail: string;
+  evidence_count: number;
+};
+
+export type DemoFlowStatus = {
+  title: string;
+  current_mode: string;
+  completion_percent: number;
+  next_step: string;
+  steps: DemoFlowStep[];
+};
+
 export type TraceStep = {
   name: string;
   status: string;
@@ -464,6 +488,16 @@ export function searchMemory(query: string) {
     method: "POST",
     body: JSON.stringify({ query, top_k: 6 })
   });
+}
+
+export function reindexEmbeddings() {
+  return request<EmbeddingReindexResponse>("/api/memory/embeddings/reindex", {
+    method: "POST"
+  });
+}
+
+export function getDemoFlow() {
+  return request<DemoFlowStatus>("/api/demo/flow");
 }
 
 export async function uploadResume(file: File) {

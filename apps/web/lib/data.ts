@@ -27,6 +27,7 @@ import {
 
 export const navItems = [
   { href: "/", label: "Command", icon: Sparkles },
+  { href: "/demo", label: "Demo", icon: Route },
   { href: "/profile", label: "Profile", icon: UserRound },
   { href: "/resume", label: "Resume", icon: FileUp },
   { href: "/memory", label: "Memory", icon: Brain },

@@ -7,6 +7,7 @@ from atlas_api.api.routes import (
     code,
     dashboard,
     decisions,
+    demo,
     evals,
     growth,
     health,
@@ -33,6 +34,7 @@ api_router.include_router(memory.router, prefix="/memory", tags=["memory"])
 api_router.include_router(retrieval.router, prefix="/retrieval", tags=["retrieval"])
 api_router.include_router(chat.router, prefix="/chat", tags=["chat"])
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
+api_router.include_router(demo.router, prefix="/demo", tags=["demo"])
 api_router.include_router(privacy.router, prefix="/privacy", tags=["privacy"])
 api_router.include_router(journal.router, prefix="/journal", tags=["journal"])
 api_router.include_router(decisions.router, prefix="/decisions", tags=["decisions"])

@@ -11,6 +11,10 @@ Ship a credible personal AI OS checkpoint that demonstrates the product loop:
 5. Request approval before any sensitive action.
 6. Record trace events for the full interaction.
 
+Current mode: local deterministic prototype with LLM-ready architecture. The checkpoint includes
+provider interfaces and configuration for OpenAI-compatible, Ollama, and vLLM-style generation and
+embeddings, but defaults to deterministic local fallbacks for repeatable tests and offline demos.
+
 ## Included In This Checkpoint
 
 - Monorepo with `apps/web`, `apps/api`, `docs`, `docker`, and `scripts`.
@@ -50,13 +54,15 @@ Ship a credible personal AI OS checkpoint that demonstrates the product loop:
 - Per-output self-evaluation and hallucination checker.
 - Simulator mode with rubric-based answer evaluation.
 - Plugin registry and hybrid cloud/local model provider surface.
+- Golden demo page backed by `/api/demo/flow` for the resume -> profile/goals -> memory retrieval ->
+  repo upload -> code analysis -> workflow -> approval -> artifact -> trace story.
 - README with quickstart, architecture summary, and demo flow.
 - Initial test setup for API and frontend lint/build verification.
 
 ## Deferred
 
-- Real LLM calls.
-- Real OpenAI or provider-native embedding generation.
+- Production provider hardening: retries, budgets, streaming, model-specific policies, and key
+  management.
 - Durable ingestion pipelines beyond profile, manual memory, and resume upload.
 - Full grammar-backed tree-sitter indexing for every supported language. The current checkpoint
   uses Python AST plus TypeScript/JavaScript heuristics and detects optional tree-sitter packages.
@@ -96,5 +102,6 @@ Ship a credible personal AI OS checkpoint that demonstrates the product loop:
 - User can capture technical decisions and update their results later.
 - User can run simulator scenarios and receive rubric-based feedback.
 - User can toggle plugin capabilities and inspect cloud/local model provider options.
+- User can open Demo and see live completion state for the golden end-to-end story.
 - The architecture docs explain how memory, retrieval, workflows, tools, approvals, and traces fit together.
 - Tests or validation commands are documented and runnable.

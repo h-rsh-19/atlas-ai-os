@@ -2,6 +2,7 @@ from fastapi import APIRouter, status
 
 from atlas_api.core.errors import AtlasError
 from atlas_api.schemas import (
+    EmbeddingReindexResponse,
     MemoryCreate,
     MemoryItem,
     MemoryUpdate,
@@ -32,6 +33,11 @@ def search_memory(payload: RetrievalRequest) -> RetrievalResponse:
         tags=payload.tags,
     )
     return RetrievalResponse(query=payload.query, hits=hits)
+
+
+@router.post("/embeddings/reindex", response_model=EmbeddingReindexResponse)
+def reindex_embeddings() -> EmbeddingReindexResponse:
+    return store.reindex_embeddings()
 
 
 @router.get("/{memory_id}", response_model=MemoryItem)

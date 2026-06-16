@@ -4,6 +4,10 @@
 
 Atlas is a personal AI operating system for a student or developer who is building projects, learning new systems, preparing for interviews, and shaping career artifacts. It is designed to be private, traceable, and action-oriented rather than a generic chatbot.
 
+Current implementation mode: local deterministic prototype with LLM-ready architecture. Atlas exposes
+provider interfaces for cloud/local LLMs and embeddings, but the default checkpoint uses deterministic
+fallbacks so it can be developed, tested, and demoed without external API calls.
+
 ## Target User
 
 The initial target user is a technical builder who has:
@@ -42,6 +46,8 @@ Atlas understands the user's personal context and turns it into useful workflows
   behavioral answers.
 - Plugin architecture and hybrid model provider surface for cloud LLMs and local Ollama/vLLM-style
   endpoints.
+- Golden demo flow status that tracks resume -> profile/goals -> memory retrieval -> repo upload ->
+  code analysis -> workflow -> approval -> artifact -> trace from live Atlas state.
 - Trace timeline for every AI plan, retrieval call, tool call, approval decision, and final action.
 - Local evaluation suite for resume bullet quality, retrieval accuracy, codebase Q&A, workflow
   reliability, citation quality, and hallucination checks.
