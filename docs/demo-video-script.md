@@ -9,6 +9,8 @@ local deterministic prototype with LLM-ready architecture.
 Narration: "Atlas is an ambitious personal AI OS, and this checkpoint is honest about where it is:
 a local deterministic prototype with provider-ready architecture. The demo has one smooth story."
 
+Click `Seed Demo` if the local state is empty. Show blockers, guided buttons, and `Copy Script`.
+
 ## 0:45 - Add Personal Context
 
 Open Resume and show parsed structured sections. Then open Profile and show goals, target roles,

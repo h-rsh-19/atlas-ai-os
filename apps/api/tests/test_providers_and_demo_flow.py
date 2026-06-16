@@ -179,3 +179,18 @@ def test_demo_flow_reports_live_golden_path_state() -> None:
     assert body["steps"][0]["id"] == "resume_upload"
     assert body["next_step"]
     assert 0 <= body["completion_percent"] <= 100
+
+
+def test_demo_seed_reset_and_script_flow() -> None:
+    seeded = client.post("/api/demo/seed")
+    script = client.get("/api/demo/script")
+    reset = client.post("/api/demo/reset")
+
+    assert seeded.status_code == 200
+    assert seeded.json()["flow"]["completion_percent"] == 100
+    assert "artifact_action" in " ".join(seeded.json()["created"])
+    assert script.status_code == 200
+    assert "Atlas recruiter demo script" in script.json()["script"]
+    assert reset.status_code == 200
+    assert reset.json()["message"] == "Reset Atlas demo-owned state."
+    assert reset.json()["deleted"]

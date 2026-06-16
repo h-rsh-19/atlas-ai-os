@@ -46,6 +46,7 @@ from atlas_api.schemas import (
 from atlas_api.services.action_service import ActionService
 from atlas_api.services.chunking import chunk_text, summarize_text
 from atlas_api.services.code_service import CodeService
+from atlas_api.services.demo_service import DemoService
 from atlas_api.services.embeddings import get_embedding_provider
 from atlas_api.services.growth_service import GrowthService
 from atlas_api.services.llm import get_llm_provider
@@ -82,6 +83,7 @@ class AtlasStore(
     TraceService,
     WorkflowService,
     CodeService,
+    DemoService,
     ActionService,
     PrivacyService,
     GrowthService,

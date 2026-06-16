@@ -79,6 +79,22 @@ export type DemoFlowStatus = {
   steps: DemoFlowStep[];
 };
 
+export type DemoSeedResponse = {
+  message: string;
+  created: string[];
+  flow: DemoFlowStatus;
+};
+
+export type DemoResetResponse = {
+  message: string;
+  deleted: Record<string, number>;
+  flow: DemoFlowStatus;
+};
+
+export type DemoScriptResponse = {
+  script: string;
+};
+
 export type TraceStep = {
   name: string;
   status: string;
@@ -505,6 +521,18 @@ export function reindexEmbeddings() {
 
 export function getDemoFlow() {
   return request<DemoFlowStatus>("/api/demo/flow");
+}
+
+export function seedDemo() {
+  return request<DemoSeedResponse>("/api/demo/seed", { method: "POST" });
+}
+
+export function resetDemo() {
+  return request<DemoResetResponse>("/api/demo/reset", { method: "POST" });
+}
+
+export function getDemoScript() {
+  return request<DemoScriptResponse>("/api/demo/script");
 }
 
 export async function uploadResume(file: File) {

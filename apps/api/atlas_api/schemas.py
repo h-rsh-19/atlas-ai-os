@@ -130,6 +130,22 @@ class DemoFlowStatus(BaseModel):
     steps: list[DemoFlowStep] = Field(default_factory=list)
 
 
+class DemoSeedResponse(BaseModel):
+    message: str
+    created: list[str] = Field(default_factory=list)
+    flow: DemoFlowStatus
+
+
+class DemoResetResponse(BaseModel):
+    message: str
+    deleted: dict[str, int] = Field(default_factory=dict)
+    flow: DemoFlowStatus
+
+
+class DemoScriptResponse(BaseModel):
+    script: str
+
+
 class ResumeStructuredProfile(BaseModel):
     education: list[str] = Field(default_factory=list)
     experience: list[str] = Field(default_factory=list)

@@ -6,9 +6,11 @@ import {
   ArrowRight,
   CheckCircle2,
   CircleDashed,
+  Clipboard,
   FileSearch,
   Play,
   RotateCcw,
+  Sparkles,
   ShieldCheck
 } from "lucide-react";
 
@@ -18,10 +20,13 @@ import { Panel, SectionTitle } from "@/components/ui/panel";
 import {
   analyzeCodebase,
   getDemoFlow,
+  getDemoScript,
   listProjects,
   proposeAction,
+  resetDemo,
   runWorkflow,
   sendChat,
+  seedDemo,
   type DemoFlowStatus,
   type DemoFlowStep
 } from "@/lib/api";
@@ -46,6 +51,7 @@ function iconFor(status: DemoFlowStep["status"]) {
 export default function DemoPage() {
   const [flow, setFlow] = useState<DemoFlowStatus | null>(null);
   const [status, setStatus] = useState("Loading demo flow...");
+  const blockers = flow?.steps.filter((step) => step.status === "pending") || [];
 
   const refresh = useCallback(async () => {
     try {
@@ -62,6 +68,38 @@ export default function DemoPage() {
   }, [refresh]);
 
   const nextStep = flow?.steps.find((step) => step.status !== "completed");
+
+  async function seed() {
+    try {
+      setStatus("Seeding demo state...");
+      const response = await seedDemo();
+      setFlow(response.flow);
+      setStatus(`${response.created.length} demo items seeded`);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Seed failed");
+    }
+  }
+
+  async function reset() {
+    try {
+      setStatus("Resetting demo state...");
+      const response = await resetDemo();
+      setFlow(response.flow);
+      setStatus(`${Object.keys(response.deleted).length} demo groups reset`);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Reset failed");
+    }
+  }
+
+  async function copyScript() {
+    try {
+      const response = await getDemoScript();
+      await navigator.clipboard.writeText(response.script);
+      setStatus("Recruiter demo script copied");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Copy failed");
+    }
+  }
 
   async function runGuidedStep(step: DemoFlowStep) {
     try {
@@ -114,6 +152,18 @@ export default function DemoPage() {
             <RotateCcw className="h-4 w-4" />
             Refresh
           </Button>
+          <Button variant="secondary" size="sm" onClick={seed}>
+            <Sparkles className="h-4 w-4" />
+            Seed Demo
+          </Button>
+          <Button variant="secondary" size="sm" onClick={reset}>
+            <RotateCcw className="h-4 w-4" />
+            Reset
+          </Button>
+          <Button variant="primary" size="sm" onClick={copyScript}>
+            <Clipboard className="h-4 w-4" />
+            Copy Script
+          </Button>
         </div>
       </div>
 
@@ -158,6 +208,24 @@ export default function DemoPage() {
                 </Button>
               ) : null}
             </div>
+
+            <div className="rounded-lg border border-atlas-line bg-atlas-panelSoft p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-atlas-muted">
+                Blockers
+              </p>
+              <div className="mt-3 space-y-2">
+                {blockers.length ? (
+                  blockers.map((step) => (
+                    <div key={step.id} className="rounded-md bg-atlas-bg p-2">
+                      <p className="text-sm font-semibold text-atlas-text">{step.title}</p>
+                      <p className="mt-1 text-xs leading-5 text-atlas-muted">{step.detail}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-atlas-muted">No hard blockers.</p>
+                )}
+              </div>
+            </div>
           </div>
         </Panel>
 
@@ -183,16 +251,25 @@ export default function DemoPage() {
                 <Badge tone="neutral">{step.evidence_count} evidence</Badge>
                 <div className="flex items-center gap-2">
                   {guidedActionLabel(step) ? (
-                    <Button variant="secondary" size="sm" onClick={() => runGuidedStep(step)}>
-                      {step.id === "approval" ? (
-                        <ShieldCheck className="h-4 w-4" />
-                      ) : step.id === "code_analysis" ? (
-                        <FileSearch className="h-4 w-4" />
-                      ) : (
-                        <Play className="h-4 w-4" />
-                      )}
-                      {guidedActionLabel(step)}
-                    </Button>
+                    canRunGuidedStep(step) ? (
+                      <Button variant="secondary" size="sm" onClick={() => runGuidedStep(step)}>
+                        {step.id === "approval" ? (
+                          <ShieldCheck className="h-4 w-4" />
+                        ) : step.id === "code_analysis" ? (
+                          <FileSearch className="h-4 w-4" />
+                        ) : (
+                          <Play className="h-4 w-4" />
+                        )}
+                        {guidedActionLabel(step)}
+                      </Button>
+                    ) : (
+                      <Button variant="secondary" size="sm" asChild>
+                        <Link href={step.route}>
+                          <ArrowRight className="h-4 w-4" />
+                          {guidedActionLabel(step)}
+                        </Link>
+                      </Button>
+                    )
                   ) : null}
                   <Button variant="ghost" size="sm" asChild>
                     <Link href={step.route}>
@@ -211,8 +288,17 @@ export default function DemoPage() {
 }
 
 function guidedActionLabel(step: DemoFlowStep) {
+  if (step.id === "resume_upload") {
+    return "Upload";
+  }
+  if (step.id === "profile_goals") {
+    return "Edit";
+  }
   if (step.id === "memory_retrieval") {
     return "Ask";
+  }
+  if (step.id === "repo_upload") {
+    return "Upload";
   }
   if (step.id === "workflow") {
     return "Run";
@@ -223,5 +309,12 @@ function guidedActionLabel(step: DemoFlowStep) {
   if (step.id === "approval") {
     return "Propose";
   }
+  if (step.id === "artifact_trace") {
+    return "Inspect";
+  }
   return "";
+}
+
+function canRunGuidedStep(step: DemoFlowStep) {
+  return ["memory_retrieval", "workflow", "code_analysis", "approval"].includes(step.id);
 }

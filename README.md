@@ -113,6 +113,7 @@ See `docs/engineering-debt.md` for explicit follow-ups on store composition, mig
 
 Recommended demo screenshots:
 
+- Demo Flow: seeded progress, blockers, guided action buttons, reset, and copy-script controls.
 - Command Center: dashboard metrics, priorities, projects, pending approvals, and voice panel.
 - Code Intelligence: React Flow graph, searchable symbols, and risk report.
 - Actions: proposed artifact preview, approve/reject controls, audit history, and generated artifact.
@@ -120,7 +121,7 @@ Recommended demo screenshots:
 - Evals: prompt coverage and latest evaluation results.
 
 Capture notes are in `docs/demo-video-script.md`; local screenshots can be saved under
-`docs/screenshots/` after running the app.
+`docs/screenshots/` after running the app. Actual screenshot capture still needs a browser QA pass.
 
 ## Quickstart
 
@@ -172,17 +173,18 @@ npm run build:web
 
 ## Demo Flow
 
-1. Open Demo and use the golden-flow progress state as the story spine.
-2. Upload a resume PDF and inspect structured education, experience, projects, skills, certifications,
+1. Open Demo and click `Seed Demo` for a complete local demo state.
+2. Use `Copy Script` to copy the recruiter walkthrough.
+3. Use blockers and guided buttons to move through the flow.
+4. Upload a resume PDF and inspect structured education, experience, projects, skills, certifications,
    and achievements.
-3. Open Profile and save goals, target roles, skills, weak areas, stack, and learning priorities.
-4. Create or search memory, then ask a grounded question such as "What should I learn next?"
-5. Upload a repository ZIP from Projects.
-6. Open Code Intel, run analysis, search symbols, inspect the graph, and review risk evidence.
-7. Run `generate_resume_bullets` or `prepare_interview_answer` from Workflows.
-8. Open Actions, propose an auto-demo pack, approve it, and inspect the artifact/audit log.
-9. Open Traces and inspect the evidence, prompt version, provider, assumptions, latency, and steps.
-10. Open Privacy, Graph, Growth, Decisions, Simulator, Evals, and Plugins as supporting depth.
+5. Open Profile and save goals, target roles, skills, weak areas, stack, and learning priorities.
+6. Ask a grounded question such as "What should I learn next?"
+7. Upload or seed a repository, then analyze symbols, graph relationships, and risk evidence.
+8. Run `generate_resume_bullets` or `prepare_interview_answer` from Workflows.
+9. Open Actions, propose or inspect an auto-demo pack, approve it, and inspect the artifact/audit log.
+10. Open Traces and inspect evidence, prompt version, provider, assumptions, latency, and steps.
+11. Open Privacy, Graph, Growth, Decisions, Simulator, Evals, and Plugins as supporting depth.
 
 ## What Makes Atlas Different
 
