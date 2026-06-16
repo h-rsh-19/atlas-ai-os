@@ -159,11 +159,19 @@ class ChatRequest(BaseModel):
     top_k: int = Field(default=5, ge=1, le=10)
 
 
+class ProviderRun(BaseModel):
+    provider: str
+    model: str
+    fallback_used: bool = False
+    fallback_reason: str | None = None
+
+
 class ChatResponse(BaseModel):
     answer: str
     citations: list[Citation] = Field(default_factory=list)
     retrieved_memories: list[RetrievalHit] = Field(default_factory=list)
     trace_id: str | None = None
+    provider: ProviderRun | None = None
 
 
 class Project(BaseModel):

@@ -6,6 +6,8 @@ import urllib.request
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
+
 from atlas_api.core.config import Settings
 
 
@@ -33,6 +35,19 @@ class LLMResult:
     errors: list[str] = field(default_factory=list)
 
 
+class GroundedChatOutput(BaseModel):
+    answer: str = Field(min_length=1)
+    confidence: float = Field(ge=0.0, le=1.0)
+    assumptions: list[str] = Field(default_factory=list)
+    verification_needed: list[str] = Field(default_factory=list)
+
+
+class WorkflowJsonOutput(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    evidence: list[str] = Field(default_factory=list)
+
+
 class LLMProvider(Protocol):
     id: str
     model: str
@@ -43,6 +58,7 @@ class LLMProvider(Protocol):
         template: PromptTemplate,
         variables: dict[str, Any],
         fallback: dict[str, Any],
+        output_model: type[BaseModel] | None = None,
     ) -> LLMResult:
         """Generate a structured JSON object from a prompt template."""
 
@@ -58,13 +74,14 @@ class DeterministicLLMProvider:
         template: PromptTemplate,
         variables: dict[str, Any],
         fallback: dict[str, Any],
+        output_model: type[BaseModel] | None = None,
     ) -> LLMResult:
         return LLMResult(
-            content=dict(fallback),
+            content=_validate_content(dict(fallback), output_model),
             provider=self.id,
             model=self.model,
             prompt_version=f"{template.id}:{template.version}",
-            fallback_used=True,
+            fallback_used=False,
         )
 
 
@@ -90,6 +107,7 @@ class OpenAIChatProvider:
         template: PromptTemplate,
         variables: dict[str, Any],
         fallback: dict[str, Any],
+        output_model: type[BaseModel] | None = None,
     ) -> LLMResult:
         if self.id == "openai" and not self.api_key:
             raise RuntimeError("ATLAS_OPENAI_API_KEY is required for OpenAI generation.")
@@ -123,7 +141,7 @@ class OpenAIChatProvider:
         if not isinstance(parsed, dict):
             raise RuntimeError("Chat provider JSON content was not an object.")
         return LLMResult(
-            content=parsed,
+            content=_validate_content(parsed, output_model),
             provider=self.id,
             model=self.model,
             prompt_version=f"{template.id}:{template.version}",
@@ -149,6 +167,7 @@ class OllamaChatProvider:
         template: PromptTemplate,
         variables: dict[str, Any],
         fallback: dict[str, Any],
+        output_model: type[BaseModel] | None = None,
     ) -> LLMResult:
         system_prompt, user_prompt = template.render(variables)
         response = _post_json(
@@ -173,7 +192,7 @@ class OllamaChatProvider:
         if not isinstance(parsed, dict):
             raise RuntimeError("Ollama JSON content was not an object.")
         return LLMResult(
-            content=parsed,
+            content=_validate_content(parsed, output_model),
             provider=self.id,
             model=self.model,
             prompt_version=f"{template.id}:{template.version}",
@@ -193,18 +212,21 @@ class FallbackLLMProvider:
         template: PromptTemplate,
         variables: dict[str, Any],
         fallback: dict[str, Any],
+        output_model: type[BaseModel] | None = None,
     ) -> LLMResult:
         try:
             return self.primary.generate_json(
                 template=template,
                 variables=variables,
                 fallback=fallback,
+                output_model=output_model,
             )
         except (
             RuntimeError,
             urllib.error.URLError,
             TimeoutError,
             json.JSONDecodeError,
+            ValidationError,
             KeyError,
             TypeError,
         ) as exc:
@@ -212,6 +234,7 @@ class FallbackLLMProvider:
                 template=template,
                 variables=variables,
                 fallback=fallback,
+                output_model=output_model,
             )
             return LLMResult(
                 content=deterministic.content,
@@ -306,6 +329,15 @@ def _post_json(
     if not isinstance(parsed, dict):
         raise RuntimeError("Provider response was not a JSON object.")
     return parsed
+
+
+def _validate_content(
+    content: dict[str, Any],
+    output_model: type[BaseModel] | None,
+) -> dict[str, Any]:
+    if output_model is None:
+        return content
+    return output_model.model_validate(content).model_dump(mode="json")
 
 
 class _TemplateVars(dict[str, Any]):

@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, FileSearch, Play, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertTriangle, CheckCircle2, FileSearch, Play, ShieldCheck, Sparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Panel, SectionTitle } from "@/components/ui/panel";
-import { sendChat, type Citation, type RetrievalHit } from "@/lib/api";
+import { sendChat, type Citation, type ProviderRun, type RetrievalHit } from "@/lib/api";
 
 export function CommandCenter() {
   const [message, setMessage] = useState(
@@ -16,6 +16,7 @@ export function CommandCenter() {
   const [answer, setAnswer] = useState("");
   const [citations, setCitations] = useState<Citation[]>([]);
   const [retrieved, setRetrieved] = useState<RetrievalHit[]>([]);
+  const [provider, setProvider] = useState<ProviderRun | null>(null);
   const [status, setStatus] = useState("Grounded chat ready");
 
   async function runChat() {
@@ -25,6 +26,7 @@ export function CommandCenter() {
       setAnswer(response.answer);
       setCitations(response.citations);
       setRetrieved(response.retrieved_memories);
+      setProvider(response.provider || null);
       setStatus(`${response.retrieved_memories.length} memories retrieved`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Chat failed");
@@ -79,6 +81,19 @@ export function CommandCenter() {
 
       {answer ? (
         <div className="mt-4 rounded-lg border border-atlas-line bg-atlas-panelSoft p-4">
+          {provider?.fallback_used ? (
+            <div className="mb-3 flex items-start gap-2 rounded-md border border-atlas-amber/30 bg-atlas-amber/10 p-3">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-atlas-amber" />
+              <div>
+                <p className="text-sm font-semibold text-atlas-amber">
+                  Provider failed, deterministic fallback used.
+                </p>
+                <p className="mt-1 text-xs leading-5 text-atlas-muted">
+                  {provider.fallback_reason || `${provider.provider}:${provider.model}`}
+                </p>
+              </div>
+            </div>
+          ) : null}
           <p className="whitespace-pre-line text-sm leading-6 text-atlas-text">{answer}</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {citations.map((citation) => (

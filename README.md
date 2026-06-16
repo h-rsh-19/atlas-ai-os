@@ -57,6 +57,7 @@ Atlas centralizes personal context and turns it into grounded workflows:
 - Plugin registry for GitHub, calendar, file, resume, repo analyzer, and interview coach capabilities.
 - Provider layer for deterministic fallback, OpenAI-compatible chat/embeddings, Ollama, and vLLM-style
   endpoints.
+- Pydantic-validated model JSON with visible provider-fallback warnings in chat and traces.
 - Personal command center with priorities, projects, pending approvals, recent memory, recent traces,
   weak areas, and next recommended action.
 - Optional browser voice command mode with speech-to-text input and text-to-speech response.
@@ -95,6 +96,7 @@ Core layers:
 - Approvals: preview, approve/reject, action audit, artifact records, and trace logs.
 
 See `docs/architecture.md` for diagrams and entity details.
+See `docs/engineering-debt.md` for explicit follow-ups on store composition, migrations, and visual QA.
 
 ## Tech Stack
 

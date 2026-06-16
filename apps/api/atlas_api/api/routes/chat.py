@@ -3,8 +3,8 @@ import time
 from fastapi import APIRouter
 
 from atlas_api.core.config import get_settings
-from atlas_api.schemas import ChatRequest, ChatResponse, TraceStep
-from atlas_api.services.llm import get_llm_provider, grounded_chat_template
+from atlas_api.schemas import ChatRequest, ChatResponse, ProviderRun, TraceStep
+from atlas_api.services.llm import GroundedChatOutput, get_llm_provider, grounded_chat_template
 from atlas_api.services.store import store
 
 router = APIRouter()
@@ -38,6 +38,7 @@ def chat(payload: ChatRequest) -> ChatResponse:
             "evidence": [hit.model_dump(mode="json") for hit in hits],
         },
         fallback=fallback,
+        output_model=GroundedChatOutput,
     )
     answer = str(llm_result.content.get("answer") or fallback["answer"])
     confidence = float(llm_result.content.get("confidence") or fallback["confidence"])
@@ -85,8 +86,12 @@ def chat(payload: ChatRequest) -> ChatResponse:
             "answer": answer,
             "citation_count": len(citations),
             "verification_needed": llm_result.content.get("verification_needed", []),
+            "provider": llm_result.provider,
+            "model": llm_result.model,
+            "fallback_used": llm_result.fallback_used,
         },
         latency_ms=latency_ms,
+        errors=llm_result.errors,
         confidence=confidence,
         assumptions=[str(item) for item in assumptions],
         steps=steps,
@@ -96,6 +101,12 @@ def chat(payload: ChatRequest) -> ChatResponse:
         citations=citations[:6],
         retrieved_memories=hits,
         trace_id=trace.id,
+        provider=ProviderRun(
+            provider=llm_result.provider,
+            model=llm_result.model,
+            fallback_used=llm_result.fallback_used,
+            fallback_reason=llm_result.errors[0] if llm_result.errors else None,
+        ),
     )
 
 

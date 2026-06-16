@@ -1,9 +1,20 @@
+import json
+
 from fastapi.testclient import TestClient
 
 from atlas_api.core.config import get_settings
 from atlas_api.main import app
-from atlas_api.services.embeddings import get_embedding_provider
-from atlas_api.services.llm import get_llm_provider, grounded_chat_template
+from atlas_api.services import embeddings as embeddings_module
+from atlas_api.services import llm as llm_module
+from atlas_api.services.embeddings import OpenAIEmbeddingProvider, get_embedding_provider
+from atlas_api.services.llm import (
+    DeterministicLLMProvider,
+    FallbackLLMProvider,
+    GroundedChatOutput,
+    OpenAIChatProvider,
+    get_llm_provider,
+    grounded_chat_template,
+)
 
 client = TestClient(app)
 
@@ -16,14 +27,124 @@ def test_deterministic_provider_layers_return_structured_results() -> None:
     generated = llm.generate_json(
         template=grounded_chat_template(),
         variables={"message": "hello", "context": "", "profile": {}, "evidence": []},
-        fallback={"answer": "local answer", "confidence": 0.5},
+        fallback={
+            "answer": "local answer",
+            "confidence": 0.5,
+            "assumptions": [],
+            "verification_needed": [],
+        },
+        output_model=GroundedChatOutput,
     )
     vector = embeddings.embed("Atlas retrieval evidence")
 
     assert generated.content["answer"] == "local answer"
     assert generated.prompt_version == "grounded-chat:v2"
+    assert generated.fallback_used is False
     assert vector.provider == "deterministic"
     assert len(vector.vector) == settings.embedding_dimensions
+
+
+def test_openai_compatible_chat_provider_path_is_validated(monkeypatch) -> None:
+    def fake_post_json(url, payload, *, headers, timeout_seconds):
+        assert url.endswith("/chat/completions")
+        assert payload["response_format"] == {"type": "json_object"}
+        assert headers["Authorization"] == "Bearer test-key"
+        return {
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps(
+                            {
+                                "answer": "Provider answer",
+                                "confidence": 0.91,
+                                "assumptions": ["Used supplied evidence"],
+                                "verification_needed": [],
+                            }
+                        )
+                    }
+                }
+            ]
+        }
+
+    monkeypatch.setattr(llm_module, "_post_json", fake_post_json)
+    provider = OpenAIChatProvider(
+        provider_id="openai",
+        api_key="test-key",
+        base_url="https://example.test/v1",
+        model="test-chat-model",
+        timeout_seconds=1,
+    )
+
+    result = provider.generate_json(
+        template=grounded_chat_template(),
+        variables={"message": "hello", "context": "", "profile": {}, "evidence": []},
+        fallback={
+            "answer": "fallback",
+            "confidence": 0.5,
+            "assumptions": [],
+            "verification_needed": [],
+        },
+        output_model=GroundedChatOutput,
+    )
+
+    assert result.provider == "openai"
+    assert result.fallback_used is False
+    assert result.content["answer"] == "Provider answer"
+
+
+def test_invalid_provider_json_falls_back_with_error(monkeypatch) -> None:
+    def fake_post_json(url, payload, *, headers, timeout_seconds):
+        return {"choices": [{"message": {"content": json.dumps({"confidence": 2})}}]}
+
+    monkeypatch.setattr(llm_module, "_post_json", fake_post_json)
+    primary = OpenAIChatProvider(
+        provider_id="openai",
+        api_key="test-key",
+        base_url="https://example.test/v1",
+        model="test-chat-model",
+        timeout_seconds=1,
+    )
+    provider = FallbackLLMProvider(primary, DeterministicLLMProvider())
+
+    result = provider.generate_json(
+        template=grounded_chat_template(),
+        variables={"message": "hello", "context": "", "profile": {}, "evidence": []},
+        fallback={
+            "answer": "validated fallback",
+            "confidence": 0.4,
+            "assumptions": [],
+            "verification_needed": ["Check provider output schema"],
+        },
+        output_model=GroundedChatOutput,
+    )
+
+    assert result.fallback_used is True
+    assert result.provider == "openai:fallback:deterministic"
+    assert result.content["answer"] == "validated fallback"
+    assert result.errors
+
+
+def test_openai_compatible_embedding_provider_path_is_mocked(monkeypatch) -> None:
+    def fake_post_json(url, payload, *, timeout_seconds, headers=None):
+        assert url.endswith("/embeddings")
+        assert payload["model"] == "test-embedding-model"
+        assert headers == {"Authorization": "Bearer test-key"}
+        return {"data": [{"embedding": [0.1, 0.2, 0.3]}]}
+
+    monkeypatch.setattr(embeddings_module, "_post_json", fake_post_json)
+    provider = OpenAIEmbeddingProvider(
+        api_key="test-key",
+        base_url="https://example.test/v1",
+        model="test-embedding-model",
+        dimensions=3,
+        timeout_seconds=1,
+    )
+
+    result = provider.embed("Atlas provider test")
+
+    assert result.provider == "openai"
+    assert result.model == "test-embedding-model"
+    assert result.vector == [0.1, 0.2, 0.3]
 
 
 def test_memory_embedding_reindex_records_provider_metadata() -> None:

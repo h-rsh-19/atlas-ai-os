@@ -154,6 +154,9 @@ flowchart LR
 - Plugin registry records capability, category, permission scopes, enabled state, status, and config.
 - Cloud/local model providers are exposed for OpenAI-compatible cloud, Ollama, and vLLM endpoints.
 - Provider status is visible in the UI; the default mode is deterministic unless configured otherwise.
+- Provider JSON is validated with Pydantic output models before it can enter chat/workflow traces.
+- If a provider fails or returns invalid JSON, Atlas records the error and clearly marks the
+  deterministic fallback path in chat and trace UI.
 
 ### Golden Demo Flow
 

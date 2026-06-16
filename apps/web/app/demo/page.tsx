@@ -2,12 +2,29 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowRight, CheckCircle2, CircleDashed, RotateCcw, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  CircleDashed,
+  FileSearch,
+  Play,
+  RotateCcw,
+  ShieldCheck
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Panel, SectionTitle } from "@/components/ui/panel";
-import { getDemoFlow, type DemoFlowStatus, type DemoFlowStep } from "@/lib/api";
+import {
+  analyzeCodebase,
+  getDemoFlow,
+  listProjects,
+  proposeAction,
+  runWorkflow,
+  sendChat,
+  type DemoFlowStatus,
+  type DemoFlowStep
+} from "@/lib/api";
 
 function toneFor(status: DemoFlowStep["status"]) {
   if (status === "completed") {
@@ -45,6 +62,40 @@ export default function DemoPage() {
   }, [refresh]);
 
   const nextStep = flow?.steps.find((step) => step.status !== "completed");
+
+  async function runGuidedStep(step: DemoFlowStep) {
+    try {
+      setStatus(`Running ${step.title.toLowerCase()}...`);
+      if (step.id === "memory_retrieval") {
+        await sendChat("What should I learn next based on my Atlas context?");
+      } else if (step.id === "workflow") {
+        await runWorkflow("generate_resume_bullets", {
+          target_role: "AI Product Engineer",
+          project: "Atlas"
+        });
+      } else if (step.id === "code_analysis") {
+        const projects = await listProjects();
+        if (!projects[0]) {
+          setStatus("Upload a repo ZIP before analysis.");
+          return;
+        }
+        await analyzeCodebase(projects[0].id);
+      } else if (step.id === "approval") {
+        await proposeAction({
+          tool_name: "generate_auto_demo_pack",
+          title: "Atlas auto-demo pack",
+          risk_level: "medium",
+          inputs: {
+            target: "Atlas recruiter demo",
+            sections: ["README section", "demo script", "resume bullet", "interview pitch"]
+          }
+        });
+      }
+      await refresh();
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Guided step failed");
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -130,12 +181,26 @@ export default function DemoPage() {
               </div>
               <div className="flex items-center justify-between gap-3">
                 <Badge tone="neutral">{step.evidence_count} evidence</Badge>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href={step.route}>
-                    Open
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                  {guidedActionLabel(step) ? (
+                    <Button variant="secondary" size="sm" onClick={() => runGuidedStep(step)}>
+                      {step.id === "approval" ? (
+                        <ShieldCheck className="h-4 w-4" />
+                      ) : step.id === "code_analysis" ? (
+                        <FileSearch className="h-4 w-4" />
+                      ) : (
+                        <Play className="h-4 w-4" />
+                      )}
+                      {guidedActionLabel(step)}
+                    </Button>
+                  ) : null}
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href={step.route}>
+                      Open
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </Panel>
           ))}
@@ -143,4 +208,20 @@ export default function DemoPage() {
       </div>
     </div>
   );
+}
+
+function guidedActionLabel(step: DemoFlowStep) {
+  if (step.id === "memory_retrieval") {
+    return "Ask";
+  }
+  if (step.id === "workflow") {
+    return "Run";
+  }
+  if (step.id === "code_analysis") {
+    return "Analyze";
+  }
+  if (step.id === "approval") {
+    return "Propose";
+  }
+  return "";
 }

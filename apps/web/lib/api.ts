@@ -48,6 +48,13 @@ export type RetrievalHit = {
   citations: Citation[];
 };
 
+export type ProviderRun = {
+  provider: string;
+  model: string;
+  fallback_used: boolean;
+  fallback_reason?: string | null;
+};
+
 export type EmbeddingReindexResponse = {
   reindexed_count: number;
   provider: string;
@@ -526,6 +533,7 @@ export function sendChat(message: string, context?: string) {
     citations: Citation[];
     retrieved_memories: RetrievalHit[];
     trace_id?: string | null;
+    provider?: ProviderRun | null;
   }>("/api/chat", {
     method: "POST",
     body: JSON.stringify({ message, context, top_k: 5 })

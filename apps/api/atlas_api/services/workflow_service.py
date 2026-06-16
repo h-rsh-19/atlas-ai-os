@@ -74,7 +74,7 @@ from atlas_api.schemas import (
 from atlas_api.services.chunking import chunk_text, summarize_text
 from atlas_api.services.code_intelligence import analyze_repository
 from atlas_api.services.embeddings import cosine_similarity
-from atlas_api.services.llm import workflow_template
+from atlas_api.services.llm import WorkflowJsonOutput, workflow_template
 from atlas_api.services.resume_parser import StructuredResume
 from atlas_api.services.store_shared import (
     artifact_dir as _artifact_dir,
@@ -302,6 +302,7 @@ class WorkflowService:
                 "fallback": deterministic_outputs,
             },
             fallback=deterministic_outputs,
+            output_model=WorkflowJsonOutput,
         )
         outputs = llm_result.content
         outputs.setdefault("_provider", llm_result.provider)
@@ -337,6 +338,7 @@ class WorkflowService:
             tool_calls=[{"tool": "memory.search"}, {"tool": "journal.list"}],
             generated_output=outputs,
             latency_ms=latency_ms,
+            errors=llm_result.errors,
             confidence=0.78 if hits else 0.58,
             assumptions=assumptions,
             steps=steps,
@@ -623,4 +625,3 @@ class WorkflowService:
                 return repo
         repos = self.list_repos()
         return repos[0] if repos else None
-
