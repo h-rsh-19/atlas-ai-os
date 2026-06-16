@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from atlas_api.schemas import (
     DemoFlowStatus,
     DemoResetResponse,
+    DemoRunStepResponse,
     DemoScriptResponse,
     DemoSeedResponse,
 )
@@ -19,6 +20,11 @@ def demo_flow() -> DemoFlowStatus:
 @router.post("/seed", response_model=DemoSeedResponse)
 def seed_demo() -> DemoSeedResponse:
     return store.seed_demo_state()
+
+
+@router.post("/run-next", response_model=DemoRunStepResponse)
+def run_next_demo_step() -> DemoRunStepResponse:
+    return store.run_next_demo_step()
 
 
 @router.post("/reset", response_model=DemoResetResponse)

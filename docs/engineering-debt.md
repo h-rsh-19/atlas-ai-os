@@ -27,6 +27,12 @@ Run after significant UI changes:
 - `/code`
 - `/actions`
 - `/traces`
+- `/providers`
 
 Check desktop and mobile widths, fallback/provider warnings, long text wrapping, graph rendering,
 approval preview ergonomics, and trace detail readability.
+
+Latest pass: browser DOM QA was run for `/demo`, `/traces`, `/memory`, `/code`, `/actions`,
+`/providers`, plus mobile `/demo`. Console errors were clean and wrapping issues were fixed for the
+new demo/provider/action surfaces. Screenshot capture still needs a follow-up in an environment where
+the browser screenshot or macOS display capture path is available.

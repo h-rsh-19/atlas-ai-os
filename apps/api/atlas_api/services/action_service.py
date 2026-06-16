@@ -325,6 +325,14 @@ class ActionService:
                 "career planning, and daily productivity."
             )
         ]
+        demo_bullet = (
+            "Built Atlas, a personal AI operating system that unifies memory, "
+            "code intelligence, workflow automation, approval-gated tool execution, "
+            "and traceable agent reasoning to assist with engineering work, learning, "
+            "career planning, and daily productivity."
+        )
+        if tool_name == "generate_auto_demo_pack" and inputs.get("demo_seed") is True:
+            bullets = [demo_bullet, *[bullet for bullet in bullets if bullet != demo_bullet]]
         target = str(inputs.get("target") or inputs.get("target_role") or "AI engineering")
         topic = str(inputs.get("topic") or title)
 
@@ -429,5 +437,4 @@ class ActionService:
         path = artifact_dir / filename
         path.write_text(content, encoding="utf-8")
         return str(path)
-
 

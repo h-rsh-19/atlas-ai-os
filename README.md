@@ -58,6 +58,8 @@ Atlas centralizes personal context and turns it into grounded workflows:
 - Provider layer for deterministic fallback, OpenAI-compatible chat/embeddings, Ollama, and vLLM-style
   endpoints.
 - Pydantic-validated model JSON with visible provider-fallback warnings in chat and traces.
+- Runtime provider health page for active generation, active embeddings, configured OpenAI state, and
+  local Ollama/vLLM reachability.
 - Personal command center with priorities, projects, pending approvals, recent memory, recent traces,
   weak areas, and next recommended action.
 - Optional browser voice command mode with speech-to-text input and text-to-speech response.
@@ -118,6 +120,7 @@ Recommended demo screenshots:
 - Code Intelligence: React Flow graph, searchable symbols, and risk report.
 - Actions: proposed artifact preview, approve/reject controls, audit history, and generated artifact.
 - Traces: run detail with evidence, steps, assumptions, latency, and output.
+- Providers: deterministic/OpenAI/Ollama/vLLM generation and embedding health.
 - Evals: prompt coverage and latest evaluation results.
 
 Capture notes are in `docs/demo-video-script.md`; local screenshots can be saved under
@@ -160,6 +163,9 @@ docker compose up --build
 
 ## Validation
 
+GitHub Actions runs backend tests, Ruff, frontend lint, and the Next production build on push and
+pull request.
+
 ```bash
 cd apps/api
 ruff check atlas_api tests
@@ -175,7 +181,7 @@ npm run build:web
 
 1. Open Demo and click `Seed Demo` for a complete local demo state.
 2. Use `Copy Script` to copy the recruiter walkthrough.
-3. Use blockers and guided buttons to move through the flow.
+3. Use `Run Next Step`, blockers, and guided buttons to move through the flow.
 4. Upload a resume PDF and inspect structured education, experience, projects, skills, certifications,
    and achievements.
 5. Open Profile and save goals, target roles, skills, weak areas, stack, and learning priorities.
@@ -184,7 +190,8 @@ npm run build:web
 8. Run `generate_resume_bullets` or `prepare_interview_answer` from Workflows.
 9. Open Actions, propose or inspect an auto-demo pack, approve it, and inspect the artifact/audit log.
 10. Open Traces and inspect evidence, prompt version, provider, assumptions, latency, and steps.
-11. Open Privacy, Graph, Growth, Decisions, Simulator, Evals, and Plugins as supporting depth.
+11. Open Privacy, Graph, Growth, Decisions, Simulator, Evals, Plugins, and Providers as supporting
+    depth.
 
 ## What Makes Atlas Different
 

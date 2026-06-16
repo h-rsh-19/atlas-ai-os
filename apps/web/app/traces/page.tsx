@@ -97,8 +97,12 @@ export default function TracesPage() {
                 </div>
               ) : null}
               <div className="grid gap-3 md:grid-cols-3">
-                <Badge tone="blue">{selected.prompt_version}</Badge>
-                <Badge tone="neutral">{selected.model_used}</Badge>
+                <Badge className="h-auto min-h-7 whitespace-normal break-all" tone="blue">
+                  {selected.prompt_version}
+                </Badge>
+                <Badge className="h-auto min-h-7 whitespace-normal break-all" tone="neutral">
+                  {selected.model_used}
+                </Badge>
                 <Badge tone={selected.errors.length ? "rose" : "teal"}>
                   {selected.errors.length ? "errors" : "clean"}
                 </Badge>
@@ -124,7 +128,7 @@ export default function TracesPage() {
                         <p className="text-sm font-semibold text-atlas-text">{step.name}</p>
                         <Badge tone="neutral">{step.latency_ms} ms</Badge>
                       </div>
-                      <pre className="mt-2 max-h-36 overflow-auto text-xs leading-5 text-atlas-muted atlas-scrollbar">
+                      <pre className="mt-2 max-h-36 overflow-auto whitespace-pre-wrap break-words text-xs leading-5 text-atlas-muted atlas-scrollbar">
                         {JSON.stringify(step.output, null, 2)}
                       </pre>
                     </div>

@@ -184,13 +184,135 @@ def test_demo_flow_reports_live_golden_path_state() -> None:
 def test_demo_seed_reset_and_script_flow() -> None:
     seeded = client.post("/api/demo/seed")
     script = client.get("/api/demo/script")
-    reset = client.post("/api/demo/reset")
 
     assert seeded.status_code == 200
     assert seeded.json()["flow"]["completion_percent"] == 100
+    assert seeded.json()["flow"]["artifact"]["title"] == "Atlas auto-demo pack"
+    assert seeded.json()["flow"]["resume_bullet"]
     assert "artifact_action" in " ".join(seeded.json()["created"])
     assert script.status_code == 200
     assert "Atlas recruiter demo script" in script.json()["script"]
+
+    demo_projects = [
+        project
+        for project in client.get("/api/projects").json()
+        if project["origin_url"] == "atlas-demo-repo.zip"
+    ]
+    demo_traces = [
+        trace
+        for trace in client.get("/api/traces").json()
+        if trace["prompt_version"] == "demo-seed-chat-v1"
+        or trace["generated_output"].get("demo_seed") is True
+        or trace["interaction_type"].startswith("approval:generate_auto_demo_pack")
+    ]
+    demo_actions = [
+        action
+        for action in client.get("/api/actions").json()
+        if action["title"] == "Atlas auto-demo pack"
+    ]
+    demo_action_ids = {action["id"] for action in demo_actions}
+    demo_artifacts = [
+        artifact
+        for artifact in client.get("/api/actions/artifacts").json()
+        if artifact["action_id"] in demo_action_ids
+    ]
+    demo_memories = [
+        memory
+        for memory in client.get("/api/memory").json()
+        if memory["source_title"] == "atlas-demo-resume.pdf"
+        or memory["source_title"].startswith("Demo seed:")
+        or "demo_seed" in memory["tags"]
+    ]
+    demo_decisions = [
+        decision
+        for decision in client.get("/api/decisions").json()
+        if "demo_seed" in decision["tags"]
+    ]
+    demo_journals = [
+        entry
+        for entry in client.get("/api/journal").json()
+        if entry["built"].startswith("Demo seed:")
+    ]
+
+    assert demo_projects
+    assert demo_traces
+    assert demo_actions and all(action["status"] == "approved" for action in demo_actions)
+    assert demo_artifacts
+    assert demo_memories
+    assert demo_decisions
+    assert demo_journals
+
+    reset = client.post("/api/demo/reset")
+
     assert reset.status_code == 200
     assert reset.json()["message"] == "Reset Atlas demo-owned state."
     assert reset.json()["deleted"]
+    assert reset.json()["deleted"]["demo_ownership"] >= 1
+
+    assert not [
+        project
+        for project in client.get("/api/projects").json()
+        if project["origin_url"] == "atlas-demo-repo.zip"
+    ]
+    assert not [
+        trace
+        for trace in client.get("/api/traces").json()
+        if trace["prompt_version"] == "demo-seed-chat-v1"
+        or trace["generated_output"].get("demo_seed") is True
+        or trace["interaction_type"].startswith("approval:generate_auto_demo_pack")
+    ]
+    assert not [
+        action
+        for action in client.get("/api/actions").json()
+        if action["title"] == "Atlas auto-demo pack"
+    ]
+    assert not [
+        artifact
+        for artifact in client.get("/api/actions/artifacts").json()
+        if artifact["title"] == "Atlas auto-demo pack"
+    ]
+    assert not [
+        memory
+        for memory in client.get("/api/memory").json()
+        if memory["source_title"] == "atlas-demo-resume.pdf"
+        or memory["source_title"].startswith("Demo seed:")
+        or "demo_seed" in memory["tags"]
+    ]
+    assert not [
+        decision
+        for decision in client.get("/api/decisions").json()
+        if "demo_seed" in decision["tags"]
+    ]
+    assert not [
+        entry
+        for entry in client.get("/api/journal").json()
+        if entry["built"].startswith("Demo seed:")
+    ]
+
+
+def test_run_next_demo_step_and_provider_health() -> None:
+    client.post("/api/demo/reset")
+    response = client.post("/api/demo/run-next")
+    health = client.get("/api/providers/health")
+
+    assert response.status_code == 200
+    body = response.json()
+    if body["ran_step"] is None:
+        assert body["message"] == "Demo flow is already complete."
+    else:
+        assert body["ran_step"] in {
+            "resume_upload",
+            "profile_goals",
+            "memory_retrieval",
+            "repo_upload",
+            "code_analysis",
+            "workflow",
+            "approval",
+            "artifact_trace",
+        }
+        assert body["created"]
+    assert health.status_code == 200
+    assert health.json()["generation_provider"] == "deterministic"
+    assert any(check["id"] == "embedding-provider" for check in health.json()["checks"])
+
+    client.post("/api/demo/reset")

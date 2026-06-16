@@ -71,16 +71,33 @@ export type DemoFlowStep = {
   evidence_count: number;
 };
 
+export type DemoArtifactSummary = {
+  id: string;
+  action_id: string;
+  title: string;
+  path: string;
+  content_preview: string;
+};
+
 export type DemoFlowStatus = {
   title: string;
   current_mode: string;
   completion_percent: number;
   next_step: string;
   steps: DemoFlowStep[];
+  artifact?: DemoArtifactSummary | null;
+  resume_bullet?: string | null;
 };
 
 export type DemoSeedResponse = {
   message: string;
+  created: string[];
+  flow: DemoFlowStatus;
+};
+
+export type DemoRunStepResponse = {
+  message: string;
+  ran_step?: string | null;
   created: string[];
   flow: DemoFlowStatus;
 };
@@ -436,6 +453,26 @@ export type ModelProvider = {
   notes: string;
 };
 
+export type ProviderHealthItem = {
+  id: string;
+  name: string;
+  provider_type: string;
+  configured: boolean;
+  active: boolean;
+  reachable?: boolean | null;
+  status: string;
+  model?: string | null;
+  endpoint?: string | null;
+  latency_ms?: number | null;
+  details: string;
+};
+
+export type ProviderHealthResponse = {
+  generation_provider: string;
+  embedding_provider: string;
+  checks: ProviderHealthItem[];
+};
+
 export type ResumeProfile = {
   id: string;
   source_id: string;
@@ -525,6 +562,10 @@ export function getDemoFlow() {
 
 export function seedDemo() {
   return request<DemoSeedResponse>("/api/demo/seed", { method: "POST" });
+}
+
+export function runNextDemoStep() {
+  return request<DemoRunStepResponse>("/api/demo/run-next", { method: "POST" });
 }
 
 export function resetDemo() {
@@ -695,6 +736,10 @@ export function rejectAction(actionId: string) {
 
 export function listArtifacts() {
   return request<ArtifactRecord[]>("/api/actions/artifacts");
+}
+
+export function getProviderHealth() {
+  return request<ProviderHealthResponse>("/api/providers/health");
 }
 
 export function listEvaluationPrompts() {

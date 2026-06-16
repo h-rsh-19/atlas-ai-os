@@ -122,16 +122,33 @@ class DemoFlowStep(BaseModel):
     evidence_count: int = 0
 
 
+class DemoArtifactSummary(BaseModel):
+    id: str
+    action_id: str
+    title: str
+    path: str
+    content_preview: str
+
+
 class DemoFlowStatus(BaseModel):
     title: str
     current_mode: str
     completion_percent: int
     next_step: str
     steps: list[DemoFlowStep] = Field(default_factory=list)
+    artifact: DemoArtifactSummary | None = None
+    resume_bullet: str | None = None
 
 
 class DemoSeedResponse(BaseModel):
     message: str
+    created: list[str] = Field(default_factory=list)
+    flow: DemoFlowStatus
+
+
+class DemoRunStepResponse(BaseModel):
+    message: str
+    ran_step: str | None = None
     created: list[str] = Field(default_factory=list)
     flow: DemoFlowStatus
 
@@ -621,6 +638,26 @@ class ModelProvider(BaseModel):
     endpoint: str | None = None
     status: str
     notes: str
+
+
+class ProviderHealthItem(BaseModel):
+    id: str
+    name: str
+    provider_type: str
+    configured: bool
+    active: bool = False
+    reachable: bool | None = None
+    status: str
+    model: str | None = None
+    endpoint: str | None = None
+    latency_ms: int | None = None
+    details: str = ""
+
+
+class ProviderHealthResponse(BaseModel):
+    generation_provider: str
+    embedding_provider: str
+    checks: list[ProviderHealthItem] = Field(default_factory=list)
 
 
 class WorkflowRun(BaseModel):

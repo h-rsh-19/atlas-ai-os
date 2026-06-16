@@ -332,6 +332,15 @@ class AtlasStore(
                         updated_at text not null
                     );
 
+                    create table if not exists demo_ownership (
+                        id text primary key,
+                        demo_run_id text not null,
+                        entity_type text not null,
+                        entity_id text not null,
+                        metadata text not null,
+                        created_at text not null
+                    );
+
                     create index if not exists ix_memories_type on memories(memory_type);
                     create index if not exists ix_memories_source on memories(source_id);
                     create index if not exists ix_trace_runs_created on trace_runs(created_at);
@@ -349,6 +358,10 @@ class AtlasStore(
                         on decision_entries(created_at);
                     create index if not exists ix_simulation_runs_created
                         on simulation_runs(created_at);
+                    create index if not exists ix_demo_ownership_run
+                        on demo_ownership(demo_run_id);
+                    create index if not exists ix_demo_ownership_entity
+                        on demo_ownership(entity_type, entity_id);
                     """
                 )
                 self._ensure_profile(db)

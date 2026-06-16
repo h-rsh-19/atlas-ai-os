@@ -44,6 +44,7 @@ export const navItems = [
   { href: "/traces", label: "Traces", icon: SquareActivity },
   { href: "/evals", label: "Evals", icon: TestTubeDiagonal },
   { href: "/plugins", label: "Plugins", icon: Puzzle },
+  { href: "/providers", label: "Providers", icon: Radar },
   { href: "/settings", label: "Settings", icon: Settings2 }
 ];
 

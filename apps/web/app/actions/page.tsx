@@ -188,7 +188,7 @@ export default function ActionsPage() {
                 <Badge tone={action.status === "approved" ? "teal" : action.status === "rejected" ? "rose" : "amber"}>
                   {action.status}
                 </Badge>
-                <span className="truncate text-right text-atlas-muted">
+                <span className="break-all text-right text-atlas-muted">
                   {action.trace_id || "not executed"}
                 </span>
               </div>
@@ -205,7 +205,7 @@ export default function ActionsPage() {
                   <p className="truncate text-sm font-semibold text-atlas-text">{artifact.title}</p>
                   <Badge tone="blue">{artifact.kind}</Badge>
                 </div>
-                <p className="truncate text-xs text-atlas-muted">{artifact.path}</p>
+                <p className="break-all text-xs leading-5 text-atlas-muted">{artifact.path}</p>
                 <p className="mt-2 text-sm leading-6 text-atlas-muted">{artifact.content_preview}</p>
               </div>
             ))}

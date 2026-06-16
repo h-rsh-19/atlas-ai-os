@@ -18,6 +18,7 @@ from atlas_api.api.routes import (
     privacy,
     profile,
     projects,
+    providers,
     resume,
     retrieval,
     self_eval,
@@ -49,4 +50,5 @@ api_router.include_router(evals.router, prefix="/evals", tags=["evals"])
 api_router.include_router(self_eval.router, prefix="/self-eval", tags=["self-eval"])
 api_router.include_router(simulator.router, prefix="/simulator", tags=["simulator"])
 api_router.include_router(plugins.router, prefix="/plugins", tags=["plugins"])
+api_router.include_router(providers.router, prefix="/providers", tags=["providers"])
 api_router.include_router(approvals.router, prefix="/approvals", tags=["approvals"])

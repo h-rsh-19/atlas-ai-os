@@ -17,6 +17,7 @@ coverage/
 *.sqlite3
 atlas.db
 atlas.local.sqlite3
+artifacts/
 .turbo/
 .idea/
 .vscode/

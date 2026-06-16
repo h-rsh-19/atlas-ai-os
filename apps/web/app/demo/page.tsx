@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   CircleDashed,
   Clipboard,
+  FileText,
   FileSearch,
   Play,
   RotateCcw,
@@ -24,6 +25,7 @@ import {
   listProjects,
   proposeAction,
   resetDemo,
+  runNextDemoStep,
   runWorkflow,
   sendChat,
   seedDemo,
@@ -51,6 +53,7 @@ function iconFor(status: DemoFlowStep["status"]) {
 export default function DemoPage() {
   const [flow, setFlow] = useState<DemoFlowStatus | null>(null);
   const [status, setStatus] = useState("Loading demo flow...");
+  const [artifactOpen, setArtifactOpen] = useState(false);
   const blockers = flow?.steps.filter((step) => step.status === "pending") || [];
 
   const refresh = useCallback(async () => {
@@ -96,6 +99,26 @@ export default function DemoPage() {
       const response = await getDemoScript();
       await navigator.clipboard.writeText(response.script);
       setStatus("Recruiter demo script copied");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Copy failed");
+    }
+  }
+
+  async function runNext() {
+    try {
+      setStatus("Running next demo step...");
+      const response = await runNextDemoStep();
+      setFlow(response.flow);
+      setStatus(response.message);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Demo step failed");
+    }
+  }
+
+  async function copyResumeBullet() {
+    try {
+      await navigator.clipboard.writeText(flow?.resume_bullet || "");
+      setStatus("Resume bullet copied");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Copy failed");
     }
@@ -156,6 +179,10 @@ export default function DemoPage() {
             <Sparkles className="h-4 w-4" />
             Seed Demo
           </Button>
+          <Button variant="primary" size="sm" onClick={runNext}>
+            <Play className="h-4 w-4" />
+            Run Next
+          </Button>
           <Button variant="secondary" size="sm" onClick={reset}>
             <RotateCcw className="h-4 w-4" />
             Reset
@@ -200,14 +227,61 @@ export default function DemoPage() {
                 {flow?.next_step || "Load the demo flow."}
               </p>
               {nextStep ? (
-                <Button className="mt-3 w-full" variant="primary" asChild>
-                  <Link href={nextStep.route}>
-                    Open Step
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+                  <Button className="w-full" variant="primary" onClick={runNext}>
+                    <Play className="h-4 w-4" />
+                    Run Next Step
+                  </Button>
+                  <Button className="w-full" variant="secondary" asChild>
+                    <Link href={nextStep.route}>
+                      Open Step
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
               ) : null}
             </div>
+
+            {flow?.artifact ? (
+              <div className="rounded-lg border border-atlas-line bg-atlas-panelSoft p-3">
+                <div className="mb-2 flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-atlas-teal" />
+                  <p className="text-sm font-semibold text-atlas-text">Generated Artifact</p>
+                </div>
+                <p className="text-sm font-semibold text-atlas-text">{flow.artifact.title}</p>
+                <p className="mt-2 text-sm leading-6 text-atlas-muted">
+                  {artifactOpen ? flow.artifact.content_preview : "Ready from the seeded approval flow."}
+                </p>
+                {flow.resume_bullet ? (
+                  <div className="mt-3 rounded-md bg-atlas-bg p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-atlas-muted">
+                      Resume bullet
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-atlas-text">{flow.resume_bullet}</p>
+                  </div>
+                ) : null}
+                <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setArtifactOpen((current) => !current)}
+                  >
+                    <FileText className="h-4 w-4" />
+                    {artifactOpen ? "Hide Artifact" : "Open Artifact"}
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={copyResumeBullet}>
+                    <Clipboard className="h-4 w-4" />
+                    Copy Resume Bullet
+                  </Button>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href="/actions">
+                      Actions
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            ) : null}
 
             <div className="rounded-lg border border-atlas-line bg-atlas-panelSoft p-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-atlas-muted">
@@ -247,9 +321,9 @@ export default function DemoPage() {
                 </div>
                 <Badge tone={toneFor(step.status)}>{step.status}</Badge>
               </div>
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <Badge tone="neutral">{step.evidence_count} evidence</Badge>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center justify-end gap-2">
                   {guidedActionLabel(step) ? (
                     canRunGuidedStep(step) ? (
                       <Button variant="secondary" size="sm" onClick={() => runGuidedStep(step)}>

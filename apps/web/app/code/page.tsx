@@ -247,7 +247,7 @@ export default function CodeIntelPage() {
                     </Badge>
                   </div>
                   <p className="text-sm leading-6 text-atlas-muted">{risk.detail}</p>
-                  <p className="mt-2 truncate text-xs text-atlas-muted">
+                  <p className="mt-2 break-all text-xs leading-5 text-atlas-muted">
                     {risk.file_path || "repo"}{risk.line ? `:${risk.line}` : ""} · {risk.evidence}
                   </p>
                 </div>

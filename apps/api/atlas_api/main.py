@@ -1,3 +1,6 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,6 +12,12 @@ from atlas_api.core.logging import configure_logging
 from atlas_api.services.store import store
 
 
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    store.initialize()
+    yield
+
+
 def create_app() -> FastAPI:
     settings = get_settings()
     configure_logging(settings.log_level)
@@ -17,6 +26,7 @@ def create_app() -> FastAPI:
         title="Atlas API",
         version=__version__,
         description="Private, traceable personal AI OS backend.",
+        lifespan=lifespan,
     )
 
     app.add_middleware(
@@ -29,10 +39,6 @@ def create_app() -> FastAPI:
 
     app.add_exception_handler(AtlasError, atlas_error_handler)
     app.add_exception_handler(Exception, unhandled_error_handler)
-
-    @app.on_event("startup")
-    def initialize_local_store() -> None:
-        store.initialize()
 
     @app.get("/healthz", tags=["health"])
     def healthz() -> dict[str, str]:

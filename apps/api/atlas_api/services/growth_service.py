@@ -862,5 +862,6 @@ class GrowthService:
             completion_percent=round((completed / len(steps)) * 100),
             next_step=next_step,
             steps=steps,
+            artifact=self.demo_artifact_summary(),
+            resume_bullet=self.demo_resume_bullet(),
         )
-
