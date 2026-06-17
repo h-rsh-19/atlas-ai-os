@@ -113,18 +113,25 @@ See `docs/engineering-debt.md` for explicit follow-ups on store composition, mig
 
 ## Screenshots
 
-Recommended demo screenshots:
+The screenshots below are generated from the seeded local demo flow with:
 
-- Demo Flow: seeded progress, blockers, guided action buttons, reset, and copy-script controls.
-- Command Center: dashboard metrics, priorities, projects, pending approvals, and voice panel.
-- Code Intelligence: React Flow graph, searchable symbols, and risk report.
-- Actions: proposed artifact preview, approve/reject controls, audit history, and generated artifact.
-- Traces: run detail with evidence, steps, assumptions, latency, and output.
-- Providers: deterministic/OpenAI/Ollama/vLLM generation and embedding health.
-- Evals: prompt coverage and latest evaluation results.
+```bash
+npm run capture:demo
+```
 
-Capture notes are in `docs/demo-video-script.md`; local screenshots can be saved under
-`docs/screenshots/` after running the app. Actual screenshot capture still needs a browser QA pass.
+![Atlas seeded demo flow](docs/screenshots/01-demo-flow.png)
+
+![Atlas provider health](docs/screenshots/02-providers.png)
+
+![Atlas trace viewer](docs/screenshots/03-traces.png)
+
+![Atlas code intelligence](docs/screenshots/04-code-intelligence.png)
+
+![Atlas approval actions](docs/screenshots/05-actions.png)
+
+Demo video: [`docs/screenshots/atlas-demo-walkthrough.webm`](docs/screenshots/atlas-demo-walkthrough.webm)
+
+Capture notes are in `docs/demo-video-script.md`.
 
 ## Quickstart
 
@@ -175,6 +182,7 @@ pytest
 ```bash
 npm run lint
 npm run build:web
+npm run test:e2e
 ```
 
 ## Demo Flow

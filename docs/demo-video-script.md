@@ -1,5 +1,26 @@
 # Atlas Demo Video Script
 
+## 60-90 Second Recruiter Cut
+
+Narration:
+
+"Here is Atlas, a local-first personal AI operating system for engineering work, learning, and career
+growth. I seed the demo so the full product loop is visible: resume/profile context, memory,
+repository analysis, workflow output, approval, artifact, and trace.
+
+The key thing is trust. Atlas is not just a chat page. It shows the current runtime mode, generated
+artifact, resume bullet, and every step in the golden path. The provider health page makes model
+state explicit: deterministic fallback is active, OpenAI configuration is visible, and local
+Ollama/vLLM endpoints are checked.
+
+On traces, every AI-style run exposes inputs, prompt version, model/provider state, assumptions,
+latency, tool calls, and outputs. On code intelligence, Atlas turns a repository into symbols, graph
+relationships, and risk evidence. On actions, writes are previewed, approved, turned into real
+artifacts, and audited.
+
+The point of Atlas is realistic AI product engineering: personal context, code intelligence,
+workflow automation, provider abstraction, approvals, and traceability in one polished system."
+
 ## 0:00 - Open Demo
 
 Show the golden-flow page: resume upload, profile/goals, memory retrieval, repo upload, code

@@ -1,19 +1,19 @@
-# Screenshot Checklist
+# Demo Screenshot Assets
 
-Save polished demo screenshots in this folder after starting the local app.
+Generated with:
 
-Recommended captures:
+```bash
+npm run capture:demo
+```
 
-- `01-demo-flow.png`: seeded golden flow, run-next control, blockers, artifact panel, reset, and
-  copy-script controls.
-- `02-command-center.png`: dashboard priorities, metrics, current projects, approvals, recent traces,
-  weak areas, and voice command panel.
-- `03-code-intelligence.png`: repo selector, React Flow graph, searchable symbols, and risk report.
-- `04-actions.png`: proposed action preview with approve/reject buttons and artifact audit.
-- `05-traces.png`: trace detail with retrieved memory, prompt version, tool calls, assumptions, and
-  steps.
-- `06-providers.png`: deterministic/OpenAI/Ollama/vLLM health, active generation, and active
-  embedding provider.
-- `07-evals.png`: evaluation prompts and latest run results.
+Captured assets:
 
-Use the demo flow in `../demo-video-script.md` as the capture order.
+- `01-demo-flow.png`: seeded golden flow, artifact panel, run-next control, reset, and copy-script.
+- `02-providers.png`: deterministic/OpenAI/Ollama/vLLM health plus active embeddings.
+- `03-traces.png`: trace log and detail view.
+- `04-code-intelligence.png`: repository graph, symbols, and risk evidence.
+- `05-actions.png`: approved artifact output and action audit.
+- `atlas-demo-walkthrough.webm`: silent 60-90 second walkthrough of demo, providers, traces, code,
+  actions, and artifact traceability.
+
+Use `../demo-video-script.md` for the spoken narration.

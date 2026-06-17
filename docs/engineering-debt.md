@@ -34,5 +34,13 @@ approval preview ergonomics, and trace detail readability.
 
 Latest pass: browser DOM QA was run for `/demo`, `/traces`, `/memory`, `/code`, `/actions`,
 `/providers`, plus mobile `/demo`. Console errors were clean and wrapping issues were fixed for the
-new demo/provider/action surfaces. Screenshot capture still needs a follow-up in an environment where
-the browser screenshot or macOS display capture path is available.
+new demo/provider/action surfaces. Playwright screenshots and a silent walkthrough video are captured
+under `docs/screenshots/`.
+
+## Real Provider Trial
+
+Current local check: `ATLAS_OPENAI_API_KEY` is not configured and Ollama is not reachable on
+`http://localhost:11434`, so a real provider trace was not recorded in this pass.
+
+Next upgrade: run one OpenAI or Ollama chat through the provider layer, keep the generated trace, and
+document the provider state in the README as a real-provider execution demo.

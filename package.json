@@ -9,6 +9,12 @@
     "dev:web": "npm --workspace apps/web run dev",
     "build:web": "npm --workspace apps/web run build",
     "lint": "npm --workspace apps/web run lint",
-    "test": "npm --workspace apps/web run lint"
+    "test": "npm --workspace apps/web run lint",
+    "test:e2e": "playwright test",
+    "playwright:install": "playwright install chromium",
+    "capture:demo": "node scripts/capture-demo-assets.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.51.1"
   }
 }
