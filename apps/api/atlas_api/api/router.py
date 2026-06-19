@@ -13,6 +13,7 @@ from atlas_api.api.routes import (
     health,
     journal,
     knowledge,
+    labs,
     memory,
     plugins,
     privacy,
@@ -41,6 +42,7 @@ api_router.include_router(journal.router, prefix="/journal", tags=["journal"])
 api_router.include_router(decisions.router, prefix="/decisions", tags=["decisions"])
 api_router.include_router(projects.router, prefix="/projects", tags=["projects"])
 api_router.include_router(code.router, prefix="/code", tags=["code"])
+api_router.include_router(labs.router, prefix="/labs", tags=["labs"])
 api_router.include_router(knowledge.router, prefix="/knowledge", tags=["knowledge"])
 api_router.include_router(growth.router, prefix="/growth", tags=["growth"])
 api_router.include_router(workflows.router, prefix="/workflows", tags=["workflows"])

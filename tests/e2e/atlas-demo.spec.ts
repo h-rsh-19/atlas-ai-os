@@ -72,3 +72,15 @@ test("action page shows approved auto-demo artifact", async ({ page, request }) 
   await expect(page.getByText("Atlas auto-demo pack").first()).toBeVisible();
   await expect(page.getByText("Approved outputs")).toBeVisible();
 });
+
+test("labs page shows systems proof tracks", async ({ page }) => {
+  await page.goto("/labs");
+
+  await expect(
+    page.getByRole("heading", { name: "Systems proof for a recruiter-grade AI OS" })
+  ).toBeVisible();
+  await expect(page.getByText("Tiny Database From Scratch")).toBeVisible();
+  await expect(page.getByText("Local Code Intelligence Engine")).toBeVisible();
+  await expect(page.getByText("End-To-End ML Platform Lite")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "TinyAtlasDatabase" })).toBeVisible();
+});

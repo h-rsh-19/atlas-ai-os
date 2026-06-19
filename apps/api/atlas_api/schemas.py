@@ -392,6 +392,40 @@ class CodeAnalysisResult(BaseModel):
     risk_report: CodeRiskReport
 
 
+class LabProofArtifact(BaseModel):
+    title: str
+    kind: str
+    path: str | None = None
+    evidence: str
+
+
+class LabTrack(BaseModel):
+    id: str
+    title: str
+    status: str
+    resume_signal: str
+    implementation_level: str
+    shipped: list[str] = Field(default_factory=list)
+    next_steps: list[str] = Field(default_factory=list)
+    proof_artifacts: list[LabProofArtifact] = Field(default_factory=list)
+
+
+class TinyDatabaseDemo(BaseModel):
+    engine: str
+    operations: list[str] = Field(default_factory=list)
+    row_count: int
+    query_result: dict[str, Any] = Field(default_factory=dict)
+    explanation: str
+
+
+class LabsOverview(BaseModel):
+    generated_at: datetime
+    tracks: list[LabTrack] = Field(default_factory=list)
+    tiny_database_demo: TinyDatabaseDemo
+    portfolio_pitch: str
+    next_best_iteration: str
+
+
 class ApprovalActionCreate(BaseModel):
     tool_name: str
     title: str

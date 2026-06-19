@@ -19,6 +19,10 @@ def test_code_analysis_extracts_symbols_graph_and_risks() -> None:
     assert any(symbol["name"] == "plan_day" for symbol in body["symbols"])
     assert body["graph"]["nodes"]
     assert body["graph"]["edges"]
+    assert body["graph"]["metrics"]["route_map"]
+    assert body["graph"]["metrics"]["test_coverage"]["source_files"] >= 1
+    assert body["graph"]["metrics"]["refactor_priorities"]
+    assert body["risk_report"]["metrics"]["top_refactor_priorities"]
     assert body["risk_report"]["risks"]
 
     symbols_response = client.get(f"/api/code/symbols?project_id={project['id']}&query=plan")

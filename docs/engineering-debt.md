@@ -44,3 +44,14 @@ Current local check: `ATLAS_OPENAI_API_KEY` is not configured and Ollama is not 
 
 Next upgrade: run one OpenAI or Ollama chat through the provider layer, keep the generated trace, and
 document the provider state in the README as a real-provider execution demo.
+
+## Labs Follow-Ups
+
+The new Labs surface adds a real TinyAtlasDatabase learning kernel, richer local code intelligence
+metrics, and an ML-platform-lite proof track. The next serious upgrades are:
+
+- Persist the tiny database operation log to JSONL and replay it on startup.
+- Add secondary indexes, range scans, and query-plan explanations.
+- Add Alembic migrations before expanding stored Labs progress.
+- Add tree-sitter parsers and NetworkX centrality metrics for the code intelligence engine.
+- Add dataset registry, model-run cost tracking, and provider policy tests for the ML platform loop.

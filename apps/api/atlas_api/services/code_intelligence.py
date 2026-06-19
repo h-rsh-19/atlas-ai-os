@@ -133,6 +133,8 @@ def _python_symbol(
 ) -> dict[str, object]:
     end_line = getattr(node, "end_lineno", node.lineno)
     signature = None
+    decorators = [_decorator_name(item) for item in getattr(node, "decorator_list", [])]
+    route_info = _route_decorator_info(getattr(node, "decorator_list", []))
     if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
         args = [arg.arg for arg in node.args.args]
         signature = f"{node.name}({', '.join(args)})"
@@ -144,7 +146,8 @@ def _python_symbol(
         "signature": signature,
         "evidence": _line(parsed.lines, node.lineno),
         "metadata": {
-            "decorators": [_decorator_name(item) for item in getattr(node, "decorator_list", [])],
+            "decorators": decorators,
+            **route_info,
         },
     }
 
@@ -192,7 +195,10 @@ def _parse_javascript_like(parsed: ParsedFile, content: str) -> None:
                 "line_end": line,
                 "signature": f"{match.group(1)} {parsed.path}",
                 "evidence": _line(parsed.lines, line),
-                "metadata": {"http_method": match.group(1)},
+                "metadata": {
+                    "http_method": match.group(1),
+                    "route_path": _next_route_from_path(parsed.path),
+                },
             }
         )
 
@@ -303,6 +309,10 @@ def _build_graph(
                 )
 
     relation_counts = Counter(edge.relation for edge in edges.values())
+    route_map = _route_map(symbols)
+    test_coverage = _test_coverage_map(parsed_files)
+    dependency_hotspots = _dependency_hotspots(nodes, edges)
+    refactor_priorities = _refactor_priorities(parsed_files, symbols, edges)
     return CodeGraph(
         project_id=project.id,
         generated_at=generated_at,
@@ -314,6 +324,10 @@ def _build_graph(
             "symbols": len(symbols),
             "relations": dict(relation_counts),
             "external_modules": sum(1 for node in nodes.values() if node.kind == "external_module"),
+            "route_map": route_map,
+            "test_coverage": test_coverage,
+            "dependency_hotspots": dependency_hotspots,
+            "refactor_priorities": refactor_priorities,
         },
     )
 
@@ -445,6 +459,24 @@ def _build_risk_report(
             )
         )
 
+    for priority in graph.metrics.get("refactor_priorities", [])[:3]:
+        if isinstance(priority, dict) and float(priority.get("score", 0)) >= 18:
+            risks.append(
+                _risk(
+                    project.id,
+                    "refactor_priority",
+                    "medium",
+                    f"Refactor priority: {priority.get('file_path')}",
+                    (
+                        "This file combines size, symbol count, TODOs, import pressure, "
+                        "and test gap signals."
+                    ),
+                    str(priority.get("reason", "Composite deterministic score.")),
+                    file_path=str(priority.get("file_path")),
+                    metadata=priority,
+                )
+            )
+
     summary = (
         f"Analyzed {len(parsed_files)} files, {graph.metrics.get('symbols', 0)} symbols, "
         f"and found {len(risks)} deterministic risks."
@@ -460,8 +492,124 @@ def _build_risk_report(
             "high_risks": sum(1 for risk in risks if risk.severity == "high"),
             "medium_risks": sum(1 for risk in risks if risk.severity == "medium"),
             "low_risks": sum(1 for risk in risks if risk.severity == "low"),
+            "route_count": len(graph.metrics.get("route_map", [])),
+            "test_coverage": graph.metrics.get("test_coverage", {}),
+            "top_dependency_hotspots": graph.metrics.get("dependency_hotspots", [])[:5],
+            "top_refactor_priorities": graph.metrics.get("refactor_priorities", [])[:5],
         },
     )
+
+
+def _route_map(symbols: list[CodeSymbol]) -> list[dict[str, object]]:
+    routes: list[dict[str, object]] = []
+    for symbol in symbols:
+        if symbol.kind != "route":
+            continue
+        method = symbol.metadata.get("http_method") or "ROUTE"
+        routes.append(
+            {
+                "method": str(method).upper(),
+                "path": str(symbol.metadata.get("route_path") or "/"),
+                "handler": symbol.name,
+                "file_path": symbol.file_path,
+                "line": symbol.line_start,
+            }
+        )
+    return sorted(routes, key=lambda item: (str(item["file_path"]), str(item["path"])))
+
+
+def _test_coverage_map(parsed_files: list[ParsedFile]) -> dict[str, object]:
+    source_files = [
+        item
+        for item in parsed_files
+        if item.language in SOURCE_LANGUAGES and not _looks_like_test(item.path)
+    ]
+    test_paths = {item.path for item in parsed_files if _looks_like_test(item.path)}
+    uncovered = [
+        item.path for item in source_files if not _has_test_counterpart(item.path, test_paths)
+    ]
+    covered = [item.path for item in source_files if item.path not in uncovered]
+    ratio = round(len(covered) / len(source_files), 2) if source_files else 1.0
+    return {
+        "source_files": len(source_files),
+        "test_files": len(test_paths),
+        "covered_files": len(covered),
+        "uncovered_files": uncovered[:20],
+        "coverage_ratio": ratio,
+    }
+
+
+def _dependency_hotspots(
+    nodes: dict[str, CodeGraphNode],
+    edges: dict[str, CodeGraphEdge],
+) -> list[dict[str, object]]:
+    inbound = Counter(edge.target for edge in edges.values() if edge.relation == "imports")
+    ranked: list[dict[str, object]] = []
+    for target, count in inbound.most_common(12):
+        node = nodes.get(target)
+        ranked.append(
+            {
+                "id": target,
+                "label": node.label if node else target,
+                "kind": node.kind if node else "unknown",
+                "file_path": node.file_path if node else None,
+                "inbound_imports": count,
+            }
+        )
+    return ranked
+
+
+def _refactor_priorities(
+    parsed_files: list[ParsedFile],
+    symbols: list[CodeSymbol],
+    edges: dict[str, CodeGraphEdge],
+) -> list[dict[str, object]]:
+    symbols_by_file = Counter(symbol.file_path for symbol in symbols)
+    inbound_by_file = Counter(
+        edge.target.replace("file:", "", 1)
+        for edge in edges.values()
+        if edge.relation == "imports" and edge.target.startswith("file:")
+    )
+    test_paths = {item.path for item in parsed_files if _looks_like_test(item.path)}
+    priorities: list[dict[str, object]] = []
+    for parsed in parsed_files:
+        if parsed.language not in SOURCE_LANGUAGES or _looks_like_test(parsed.path):
+            continue
+        lines = len(parsed.lines)
+        todos = sum(1 for line in parsed.lines if TODO_PATTERN.search(line))
+        symbol_count = symbols_by_file[parsed.path]
+        inbound = inbound_by_file[parsed.path]
+        missing_test = not _has_test_counterpart(parsed.path, test_paths)
+        score = round(
+            min(
+                100,
+                (lines / 40)
+                + (symbol_count * 3)
+                + (todos * 7)
+                + (inbound * 5)
+                + (12 if missing_test else 0),
+            ),
+            1,
+        )
+        if score <= 0:
+            continue
+        reasons = [
+            f"{lines} lines",
+            f"{symbol_count} symbols",
+            f"{inbound} inbound imports",
+        ]
+        if todos:
+            reasons.append(f"{todos} TODO/FIXME markers")
+        if missing_test:
+            reasons.append("missing nearby test")
+        priorities.append(
+            {
+                "file_path": parsed.path,
+                "score": score,
+                "reason": ", ".join(reasons),
+            }
+        )
+    return sorted(priorities, key=lambda item: float(item["score"]), reverse=True)[:12]
 
 
 def _is_source_or_doc(file: RepoFile) -> bool:
@@ -481,10 +629,22 @@ def _line_number(content: str, offset: int) -> int:
 
 
 def _has_route_decorator(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
-    return any(
-        decorator.startswith(("app.", "router.")) and decorator.split(".")[-1] in _http_methods()
-        for decorator in (_decorator_name(item) for item in node.decorator_list)
-    )
+    return bool(_route_decorator_info(node.decorator_list))
+
+
+def _route_decorator_info(decorators: list[ast.expr]) -> dict[str, str]:
+    for decorator in decorators:
+        name = _decorator_name(decorator)
+        method = name.split(".")[-1]
+        if not (name.startswith(("app.", "router.")) and method in _http_methods()):
+            continue
+        route_path = ""
+        if isinstance(decorator, ast.Call) and decorator.args:
+            first_arg = decorator.args[0]
+            if isinstance(first_arg, ast.Constant) and isinstance(first_arg.value, str):
+                route_path = first_arg.value
+        return {"http_method": method.upper(), "route_path": route_path or "/"}
+    return {}
 
 
 def _decorator_name(node: ast.AST) -> str:
@@ -507,6 +667,18 @@ def _python_call_name(node: ast.Call) -> str | None:
 
 def _http_methods() -> set[str]:
     return {"get", "post", "put", "patch", "delete", "options", "head"}
+
+
+def _next_route_from_path(path: str) -> str:
+    route = path
+    for prefix in ("app/", "src/app/"):
+        if prefix in route:
+            route = route.split(prefix, 1)[1]
+            break
+    route = re.sub(r"/route\.(ts|tsx|js|jsx)$", "", route)
+    route = re.sub(r"/page\.(ts|tsx|js|jsx)$", "", route)
+    route = re.sub(r"\[(.*?)\]", r":\1", route)
+    return "/" + route.strip("/")
 
 
 def _extract_dependency_mentions(path: str, content: str) -> list[str]:

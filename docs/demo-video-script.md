@@ -18,8 +18,13 @@ latency, tool calls, and outputs. On code intelligence, Atlas turns a repository
 relationships, and risk evidence. On actions, writes are previewed, approved, turned into real
 artifacts, and audited.
 
+The Labs page is the systems-depth proof: a tiny database kernel from scratch, a local code
+intelligence engine, and an ML-platform-lite loop for evals, provider health, traces, and approved
+outputs.
+
 The point of Atlas is realistic AI product engineering: personal context, code intelligence,
-workflow automation, provider abstraction, approvals, and traceability in one polished system."
+workflow automation, provider abstraction, approvals, traceability, and systems fundamentals in one
+polished system."
 
 ## 0:00 - Open Demo
 

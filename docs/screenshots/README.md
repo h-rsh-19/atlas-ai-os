@@ -13,7 +13,8 @@ Captured assets:
 - `03-traces.png`: trace log and detail view.
 - `04-code-intelligence.png`: repository graph, symbols, and risk evidence.
 - `05-actions.png`: approved artifact output and action audit.
+- `06-labs.png`: tiny database, code intelligence, and ML platform lite proof tracks.
 - `atlas-demo-walkthrough.webm`: silent 60-90 second walkthrough of demo, providers, traces, code,
-  actions, and artifact traceability.
+  actions, Labs, and artifact traceability.
 
 Use `../demo-video-script.md` for the spoken narration.

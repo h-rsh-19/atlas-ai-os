@@ -270,6 +270,40 @@ export type CodeAnalysisResult = {
   risk_report: CodeRiskReport;
 };
 
+export type LabProofArtifact = {
+  title: string;
+  kind: string;
+  path?: string | null;
+  evidence: string;
+};
+
+export type LabTrack = {
+  id: string;
+  title: string;
+  status: string;
+  resume_signal: string;
+  implementation_level: string;
+  shipped: string[];
+  next_steps: string[];
+  proof_artifacts: LabProofArtifact[];
+};
+
+export type TinyDatabaseDemo = {
+  engine: string;
+  operations: string[];
+  row_count: number;
+  query_result: Record<string, unknown>;
+  explanation: string;
+};
+
+export type LabsOverview = {
+  generated_at: string;
+  tracks: LabTrack[];
+  tiny_database_demo: TinyDatabaseDemo;
+  portfolio_pitch: string;
+  next_best_iteration: string;
+};
+
 export type ApprovalAction = {
   id: string;
   tool_name: string;
@@ -708,6 +742,10 @@ export function getCodeGraph(projectId: string) {
 
 export function getCodeRisks(projectId: string) {
   return request<CodeRiskReport>(`/api/code/risks/${projectId}`);
+}
+
+export function getLabsOverview() {
+  return request<LabsOverview>("/api/labs");
 }
 
 export function listActions() {

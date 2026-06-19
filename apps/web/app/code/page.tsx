@@ -113,6 +113,14 @@ export default function CodeIntelPage() {
 
   const flow = useMemo(() => toFlow(graph), [graph]);
   const topRisks = risks?.risks.slice(0, 12) || [];
+  const routeMap = metricList(graph, "route_map");
+  const hotspots = metricList(graph, "dependency_hotspots");
+  const priorities = metricList(graph, "refactor_priorities");
+  const coverage = metricObject(graph, "test_coverage");
+  const coverageRatio =
+    typeof coverage.coverage_ratio === "number"
+      ? `${Math.round(coverage.coverage_ratio * 100)}%`
+      : "n/a";
 
   return (
     <div className="space-y-6">
@@ -186,6 +194,35 @@ export default function CodeIntelPage() {
           </div>
         </Panel>
       </div>
+
+      <Panel>
+        <SectionTitle
+          eyebrow="Engine Signals"
+          title="Route map, coverage, hotspots, and refactor priority"
+        />
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <SignalTile
+            label="Routes"
+            value={String(routeMap.length)}
+            detail={routeMap[0] ? formatRoute(routeMap[0]) : "No route handlers detected"}
+          />
+          <SignalTile
+            label="Test coverage map"
+            value={coverageRatio}
+            detail={`${coverage.covered_files || 0}/${coverage.source_files || 0} source files covered`}
+          />
+          <SignalTile
+            label="Dependency hotspot"
+            value={hotspots[0] ? String(hotspots[0].inbound_imports || 0) : "0"}
+            detail={hotspots[0] ? String(hotspots[0].label || hotspots[0].id) : "No import hotspot"}
+          />
+          <SignalTile
+            label="Refactor priority"
+            value={priorities[0] ? String(priorities[0].score || 0) : "0"}
+            detail={priorities[0] ? String(priorities[0].file_path) : "No priority score"}
+          />
+        </div>
+      </Panel>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
         <Panel>
@@ -262,6 +299,42 @@ export default function CodeIntelPage() {
       </div>
     </div>
   );
+}
+
+function SignalTile({
+  label,
+  value,
+  detail
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-lg border border-atlas-line bg-atlas-panelSoft p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-atlas-muted">
+        {label}
+      </p>
+      <p className="mt-2 text-2xl font-semibold text-atlas-text">{value}</p>
+      <p className="mt-2 line-clamp-2 text-sm leading-6 text-atlas-muted">{detail}</p>
+    </div>
+  );
+}
+
+function metricList(graph: CodeGraph | null, key: string): Array<Record<string, unknown>> {
+  const value = graph?.metrics[key];
+  return Array.isArray(value) ? (value as Array<Record<string, unknown>>) : [];
+}
+
+function metricObject(graph: CodeGraph | null, key: string): Record<string, unknown> {
+  const value = graph?.metrics[key];
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function formatRoute(route: Record<string, unknown>) {
+  return `${String(route.method || "ROUTE")} ${String(route.path || "/")}`;
 }
 
 function toFlow(graph: CodeGraph | null): { nodes: Node[]; edges: Edge[] } {

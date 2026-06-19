@@ -65,6 +65,8 @@ Atlas centralizes personal context and turns it into grounded workflows:
 - Optional browser voice command mode with speech-to-text input and text-to-speech response.
 - Local evaluation suite for resume bullet quality, retrieval accuracy, codebase Q&A correctness,
   workflow reliability, citation quality, and hallucination checks.
+- Atlas Labs proof surface for three resume-grade systems tracks: a tiny database from scratch,
+  the local code intelligence engine, and an end-to-end ML platform lite loop.
 
 ## Architecture
 
@@ -87,6 +89,8 @@ Core layers:
 - Workflow engine: named workflows with trace linkage, provider-backed structured JSON output, and a
   deterministic fallback path designed to later swap in LangGraph or OpenAI Agents SDK.
 - Code intelligence: AST/heuristic parser, graph builder, deterministic risk analyzer.
+- Labs: deterministic proof modules for storage internals, code intelligence, and ML platform
+  evaluation architecture.
 - Privacy and trust: local permission scopes, redaction, export, forget controls, and local-only mode.
 - Knowledge graph: deterministic graph builder over profile, memory, journals, repos, code, and
   decisions.
@@ -99,6 +103,7 @@ Core layers:
 
 See `docs/architecture.md` for diagrams and entity details.
 See `docs/engineering-debt.md` for explicit follow-ups on store composition, migrations, and visual QA.
+See `docs/100-iteration-sprint.md` for the latest 100-step improvement ledger.
 
 ## Tech Stack
 
@@ -128,6 +133,8 @@ npm run capture:demo
 ![Atlas code intelligence](docs/screenshots/04-code-intelligence.png)
 
 ![Atlas approval actions](docs/screenshots/05-actions.png)
+
+![Atlas labs systems proof](docs/screenshots/06-labs.png)
 
 Demo video: [`docs/screenshots/atlas-demo-walkthrough.webm`](docs/screenshots/atlas-demo-walkthrough.webm)
 
@@ -198,7 +205,8 @@ npm run test:e2e
 8. Run `generate_resume_bullets` or `prepare_interview_answer` from Workflows.
 9. Open Actions, propose or inspect an auto-demo pack, approve it, and inspect the artifact/audit log.
 10. Open Traces and inspect evidence, prompt version, provider, assumptions, latency, and steps.
-11. Open Privacy, Graph, Growth, Decisions, Simulator, Evals, Plugins, and Providers as supporting
+11. Open Labs to show the tiny database, local code intelligence, and ML platform lite proof tracks.
+12. Open Privacy, Graph, Growth, Decisions, Simulator, Evals, Plugins, and Providers as supporting
     depth.
 
 ## What Makes Atlas Different
@@ -214,6 +222,8 @@ npm run test:e2e
 - Growth-aware: Atlas turns work logs and decisions into a timeline, skill map, and interview drills.
 - Product-shaped UI: dedicated surfaces for memory, workflows, code intelligence, actions, traces,
   and evaluations.
+- Systems proof: Labs connects Atlas to storage internals, static analysis, and ML-platform
+  evaluation so it reads like a serious engineering portfolio, not only an app UI.
 
 ## Future Roadmap
 

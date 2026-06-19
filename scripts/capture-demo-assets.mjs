@@ -10,7 +10,8 @@ const screenshots = [
   ["/providers", "02-providers.png"],
   ["/traces", "03-traces.png"],
   ["/code", "04-code-intelligence.png"],
-  ["/actions", "05-actions.png"]
+  ["/actions", "05-actions.png"],
+  ["/labs", "06-labs.png"]
 ];
 
 async function waitForPage(page) {
@@ -81,6 +82,8 @@ async function captureVideo(browser) {
   await goto(page, "/code");
   await page.waitForTimeout(10_000);
   await goto(page, "/actions");
+  await page.waitForTimeout(10_000);
+  await goto(page, "/labs");
   await page.waitForTimeout(10_000);
   await goto(page, "/demo");
   await page.waitForTimeout(8_000);
