@@ -13,7 +13,7 @@ def test_privacy_settings_redaction_export_and_forget() -> None:
             "source_type": "note",
             "memory_type": "note",
             "title": "Temporary private fact",
-            "content": "Email me at person@example.com with token: sk-testsecret1234567890.",
+            "content": "Email me at person@example.com with token: fake-redacted-token-1234567890.",
             "tags": ["privacy"],
             "importance": 0.6,
         },
@@ -22,7 +22,7 @@ def test_privacy_settings_redaction_export_and_forget() -> None:
     settings = client.get("/api/privacy")
     redact = client.post(
         "/api/privacy/redact",
-        json={"text": "Contact person@example.com and token: sk-testsecret1234567890"},
+        json={"text": "Contact person@example.com and token: fake-redacted-token-1234567890"},
     )
     exported = client.get("/api/privacy/export?redacted=true")
     forgotten = client.post("/api/privacy/forget", json={"memory_id": memory["id"]})
