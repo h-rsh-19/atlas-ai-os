@@ -4,6 +4,7 @@ const apiPort = 8100;
 const webPort = 3100;
 const apiBaseUrl = `http://127.0.0.1:${apiPort}`;
 const webBaseUrl = `http://localhost:${webPort}`;
+const pythonCommand = process.env.ATLAS_E2E_PYTHON || "python";
 
 export default defineConfig({
   testDir: "tests/e2e",
@@ -29,7 +30,7 @@ export default defineConfig({
         "mkdir -p .tmp && rm -f .tmp/e2e-atlas.sqlite3 && " +
         "ATLAS_STORAGE_PATH=.tmp/e2e-atlas.sqlite3 " +
         `ATLAS_CORS_ORIGINS='[\"${webBaseUrl}\"]' ` +
-        `.venv/bin/uvicorn atlas_api.main:app --port ${apiPort}`,
+        `${pythonCommand} -m uvicorn atlas_api.main:app --port ${apiPort}`,
       cwd: "apps/api",
       url: `${apiBaseUrl}/healthz`,
       timeout: 120_000,
