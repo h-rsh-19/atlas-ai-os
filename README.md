@@ -1,5 +1,9 @@
 # Atlas
 
+[![CI](https://github.com/h-rsh-19/atlas-ai-os/actions/workflows/ci.yml/badge.svg)](https://github.com/h-rsh-19/atlas-ai-os/actions/workflows/ci.yml)
+[![Stack](https://img.shields.io/badge/stack-FastAPI%20%2B%20Next.js%20%2B%20SQLite-0f766e)](#tech-stack)
+[![Mode](https://img.shields.io/badge/mode-local--first%20deterministic-2563eb)](#what-makes-atlas-different)
+
 Atlas is a private, traceable personal AI operating system for engineering work, learning, career
 planning, and daily productivity.
 
@@ -24,6 +28,16 @@ Atlas centralizes personal context and turns it into grounded workflows:
 - Run named workflows for planning, career intelligence, and codebase understanding.
 - Propose artifacts and memory writes behind explicit approval gates.
 - Inspect traces for every chat, workflow, evaluation, and approved action.
+
+## Recruiter Walkthrough
+
+Short path for reviewers:
+
+1. Open [`docs/recruiter-walkthrough.md`](docs/recruiter-walkthrough.md) for the fastest portfolio read.
+2. Visit the static recruiter demo page: <https://h-rsh-19.github.io/atlas-ai-os/>.
+3. Watch [`docs/screenshots/atlas-demo-walkthrough.webm`](docs/screenshots/atlas-demo-walkthrough.webm) for the complete guided product loop.
+4. Skim [`docs/architecture.md`](docs/architecture.md) for the system design, entity model, and service boundaries.
+5. Check [`docs/evaluation-strategy.md`](docs/evaluation-strategy.md) and the CI badge above for validation discipline.
 
 ## Features
 
