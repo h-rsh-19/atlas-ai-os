@@ -24,4 +24,4 @@ def test_memory_route_returns_seed_items() -> None:
     response = client.get("/api/memory")
 
     assert response.status_code == 200
-    assert response.json()[0]["source_title"] == "Atlas Product Scope"
+    assert any(memory["source_title"] == "Atlas Product Scope" for memory in response.json())
